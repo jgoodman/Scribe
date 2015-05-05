@@ -1,0 +1,20 @@
+[%- INCLUDE scribe/header.html %]
+        [%- IF success %]
+        <b>Success!</b><br>
+        [%- ELSIF error %]
+        <b>Error!</b><br>
+        [%- END %]
+        <div class="form">
+            <form name="[% form_name %]" method="post">
+                <table class="add">
+                    [%- FOREACH column IN columns %]
+                    <tr class="add">
+                        <td class="add">[%- column %]</td>
+                        <td class="add"><input class="add" name="[%- column %]"></td>
+                    </tr>
+                    [%- END %]
+                </table>
+                <input class="submit" type="submit">
+            </form>
+        </div>
+[%- INCLUDE scribe/footer.html %]

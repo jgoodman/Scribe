@@ -1,0 +1,23 @@
+[%- INCLUDE scribe/header.html %]
+        [%- IF success %]
+        <b>Success!</b><br>
+        [%- ELSIF error %]
+        <b>Error!</b><br>
+        [%- END %]
+        <div class="list">
+            <table class="list">
+                <tr class="list">
+                [%- FOREACH column IN columns %]
+                    <th class="list">[%- column %]</th>
+                [%- END %]
+                </tr>
+            [%- FOREACH row IN rows %]
+                <tr class="list">
+                [%- FOREACH col IN row %]
+                    <td class="list">[%- col %]</td>
+                [%- END %]
+                </tr>
+            [%- END %]
+            </table>
+        </div>
+[%- INCLUDE scribe/footer.html %]

@@ -1,0 +1,21 @@
+[% INCLUDE scribe/header.html %]
+        [%- FOREACH note IN notes %]
+        <div class="note">
+            <div class="note-header note-header-[%- note.color %]">
+                <span class="note-header-name">[%- note.name %]</span>
+                <form class="note-header-delete" action="scribe/delete_note" name="[% form_name %]" method="post">
+                    <input class="note-header-delete" style="display: none;" name="note_id" value="[%- note.note_id %]"></input>
+                    <button class="note-header-delete" type="submit">x</button>
+                </form>
+            </div>
+            <div class="note-content">
+                <span>[%- note.text %]</span>
+            </div>
+        </div>
+        [%- END %]
+[% INCLUDE scribe/footer.html %]
+<script>
+function add_note_div_show() {
+    document.getElementById('add_note_div_show').style.display = "block";
+}
+</script>
