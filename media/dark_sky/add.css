@@ -1,0 +1,67 @@
+div.form {
+    padding: .5em;
+    margin: .5em;
+    border-radius: 5px;
+    border: 1px solid #373737;
+    width: 21.75em;
+}
+
+input.name {
+    border:1px solid #6E6E6E;
+    font-size: 14pt;
+    color:#D8D8D8;
+    background-color: #FDFDFD;
+}
+
+input.submit {
+    background-color: #373737;
+    font-size: 12pt;
+    color: #06BDFA;
+}
+
+select.color {
+    font-size: 14pt;
+    float: right;
+}
+
+textarea.text {
+    border:1px solid #6E6E6E;
+    font-size: 12pt;
+    max-width:23.25em;
+    background-color: #FDFDFD;
+}
+
+table.add {
+    color: #373737;
+    font-size: 14pt;
+    padding: .25em .25em .5em 0em;
+}
+
+td.add {
+    padding: .25em;
+}
+
+#option-color-red {
+    background-color:red;
+}
+
+#option-color-orange {
+    background-color:orange;
+}
+
+#option-color-yellow {
+    background-color:yellow;
+}
+
+#option-color-green {
+    background-color:green;
+}
+
+#option-color-blue {
+    background-color:blue;
+}
+
+#option-color-purple {
+    background-color:purple;
+}
+

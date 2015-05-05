@@ -1,0 +1,34 @@
+div.list {
+    padding: .5em;
+    margin: .5em;
+    border-radius: 5px;
+}
+
+table.list {
+    border-collapse: collapse;
+    padding: .25em .5em .25em .5em;
+    text-align: center;
+    border: 1px solid #444444;
+    table-layout: auto;
+}
+
+tr.list {
+    color: #06BDFA;
+    text-align: center;
+    border: 1px solid #444444;
+}
+
+th.list {
+    color: #06BDFA;
+    background-color: #373737;
+    padding: .25em 1em .25em 1em;
+    text-align: center;
+    border: 1px solid #444444;
+}
+
+td.list {
+    color: #373737;
+    padding: .25em 1em .25em 1em;
+    text-align: center;
+    border: 1px solid #444444;
+}
