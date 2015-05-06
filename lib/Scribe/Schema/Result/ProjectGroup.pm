@@ -12,6 +12,7 @@ __PACKAGE__->add_columns(
 );
 
 __PACKAGE__->set_primary_key('group_id');
+__PACKAGE__->has_many('projects', 'Scribe::Schema::Result::Project', 'group_id');
 
 1;
 
