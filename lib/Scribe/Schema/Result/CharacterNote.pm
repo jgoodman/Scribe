@@ -25,7 +25,7 @@ Scribe::Schema::Result::CharacterNote
 
 =head1 SYNOPSIS
 
-This module abstracts "character_note"
+This module abstracts "character_note", which links a character to a note.
 
 =head1 METHODS
 

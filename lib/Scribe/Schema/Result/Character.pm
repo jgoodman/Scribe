@@ -12,6 +12,9 @@ __PACKAGE__->add_columns(
 );
 
 __PACKAGE__->set_primary_key('character_id');
+__PACKAGE__->has_many('goals', 'Scribe::Schema::Result::CharacterGoal', 'character_id');
+__PACKAGE__->has_many('notes', 'Scribe::Schema::Result::CharacterNote', 'character_id');
+__PACKAGE__->has_many('meta',  'Scribe::Schema::Result::CharacterMeta', 'character_id');
 
 1;
 
@@ -23,7 +26,8 @@ Scribe::Schema::Result::Character
 
 =head1 SYNOPSIS
 
-This module abstracts "character"
+This module abstracts "character" records.
+A character is a being which has intelligence in the universe.
 
 =head1 METHODS
 

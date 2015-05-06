@@ -25,7 +25,8 @@ Scribe::Schema::Result::CharacterGoal
 
 =head1 SYNOPSIS
 
-This module abstracts "character_goal"
+This module abstracts "character_goal", which links
+a character to a goal/objective that they are wanting to accomplish
 
 =head1 METHODS
 
