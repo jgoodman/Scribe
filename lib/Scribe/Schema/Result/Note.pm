@@ -16,6 +16,7 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key('note_id');
 __PACKAGE__->belongs_to(label => 'Scribe::Schema::Result::Label', 'label_id', { join_type => 'left' });
+__PACKAGE__->has_many('characters', 'Scribe::Schema::Result::CharacterNote', 'note_id');
 
 1;
 
