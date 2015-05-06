@@ -12,6 +12,8 @@ __PACKAGE__->add_columns(
 );
 
 __PACKAGE__->set_primary_key('place_id');
+__PACKAGE__->has_many('notes', 'Scribe::Schema::Result::PlaceNote', 'place_id');
+__PACKAGE__->has_many('meta',  'Scribe::Schema::Result::PlaceMeta', 'place_id');
 
 1;
 
