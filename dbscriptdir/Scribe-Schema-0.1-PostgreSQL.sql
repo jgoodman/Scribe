@@ -1,6 +1,6 @@
 -- 
 -- Created by SQL::Translator::Producer::PostgreSQL
--- Created on Wed May  6 03:45:11 2015
+-- Created on Wed May  6 04:51:33 2015
 -- 
 --
 -- Table: access_user
@@ -68,6 +68,19 @@ CREATE TABLE project_group (
 );
 
 --
+-- Table: character_meta
+--
+DROP TABLE character_meta CASCADE;
+CREATE TABLE character_meta (
+  meta_id serial NOT NULL,
+  character_id integer NOT NULL,
+  key text,
+  value text,
+  PRIMARY KEY (meta_id)
+);
+CREATE INDEX character_meta_idx_character_id on character_meta (character_id);
+
+--
 -- Table: note
 --
 DROP TABLE note CASCADE;
@@ -80,6 +93,19 @@ CREATE TABLE note (
   PRIMARY KEY (note_id)
 );
 CREATE INDEX note_idx_label_id on note (label_id);
+
+--
+-- Table: place_meta
+--
+DROP TABLE place_meta CASCADE;
+CREATE TABLE place_meta (
+  meta_id serial NOT NULL,
+  place_id integer NOT NULL,
+  key text,
+  value text,
+  PRIMARY KEY (meta_id)
+);
+CREATE INDEX place_meta_idx_place_id on place_meta (place_id);
 
 --
 -- Table: project
@@ -118,24 +144,66 @@ CREATE INDEX character_note_idx_character_id on character_note (character_id);
 CREATE INDEX character_note_idx_note_id on character_note (note_id);
 
 --
+-- Table: goal_note
+--
+DROP TABLE goal_note CASCADE;
+CREATE TABLE goal_note (
+  goal_id integer NOT NULL,
+  note_id integer NOT NULL,
+  CONSTRAINT goal_note_goal_id_note_id UNIQUE (goal_id, note_id)
+);
+CREATE INDEX goal_note_idx_goal_id on goal_note (goal_id);
+CREATE INDEX goal_note_idx_note_id on goal_note (note_id);
+
+--
+-- Table: place_note
+--
+DROP TABLE place_note CASCADE;
+CREATE TABLE place_note (
+  place_id integer NOT NULL,
+  note_id integer NOT NULL,
+  CONSTRAINT place_note_place_id_note_id UNIQUE (place_id, note_id)
+);
+CREATE INDEX place_note_idx_note_id on place_note (note_id);
+CREATE INDEX place_note_idx_place_id on place_note (place_id);
+
+--
 -- Foreign Key Definitions
 --
+
+ALTER TABLE character_meta ADD CONSTRAINT character_meta_fk_character_id FOREIGN KEY (character_id)
+  REFERENCES character (character_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
 
 ALTER TABLE note ADD CONSTRAINT note_fk_label_id FOREIGN KEY (label_id)
   REFERENCES label (label_id) DEFERRABLE;
 
+ALTER TABLE place_meta ADD CONSTRAINT place_meta_fk_place_id FOREIGN KEY (place_id)
+  REFERENCES place (place_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
+
 ALTER TABLE project ADD CONSTRAINT project_fk_group_id FOREIGN KEY (group_id)
-  REFERENCES project_group (group_id) DEFERRABLE;
+  REFERENCES project_group (group_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
 
 ALTER TABLE character_goal ADD CONSTRAINT character_goal_fk_character_id FOREIGN KEY (character_id)
-  REFERENCES character (character_id) DEFERRABLE;
+  REFERENCES character (character_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
 
 ALTER TABLE character_goal ADD CONSTRAINT character_goal_fk_goal_id FOREIGN KEY (goal_id)
-  REFERENCES goal (goal_id) DEFERRABLE;
+  REFERENCES goal (goal_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
 
 ALTER TABLE character_note ADD CONSTRAINT character_note_fk_character_id FOREIGN KEY (character_id)
-  REFERENCES character (character_id) DEFERRABLE;
+  REFERENCES character (character_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
 
 ALTER TABLE character_note ADD CONSTRAINT character_note_fk_note_id FOREIGN KEY (note_id)
+  REFERENCES note (note_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
+
+ALTER TABLE goal_note ADD CONSTRAINT goal_note_fk_goal_id FOREIGN KEY (goal_id)
+  REFERENCES goal (goal_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
+
+ALTER TABLE goal_note ADD CONSTRAINT goal_note_fk_note_id FOREIGN KEY (note_id)
   REFERENCES note (note_id) DEFERRABLE;
+
+ALTER TABLE place_note ADD CONSTRAINT place_note_fk_note_id FOREIGN KEY (note_id)
+  REFERENCES note (note_id) DEFERRABLE;
+
+ALTER TABLE place_note ADD CONSTRAINT place_note_fk_place_id FOREIGN KEY (place_id)
+  REFERENCES place (place_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
 
