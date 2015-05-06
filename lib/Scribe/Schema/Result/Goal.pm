@@ -12,6 +12,8 @@ __PACKAGE__->add_columns(
 );
 
 __PACKAGE__->set_primary_key('goal_id');
+__PACKAGE__->has_many('characters', 'Scribe::Schema::Result::CharacterGoal', 'goal_id');
+__PACKAGE__->has_many('notes',      'Scribe::Schema::Result::GoalNote',      'goal_id');
 
 1;
 
@@ -23,7 +25,7 @@ Scribe::Schema::Result::Goal
 
 =head1 SYNOPSIS
 
-This module abstracts "goal"
+This module abstracts "goal" which represents an objective to obtain.
 
 =head1 METHODS
 
