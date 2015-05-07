@@ -26,16 +26,18 @@ sub template_path { shift->app_path . '/tt' }
 
 sub name_module { 'scribe' }
 
-sub url {
+sub url_base {
     my $self = shift;
     return 'http://'. $self->config->server_url .'/'. $self->config->app_dirname;
 }
 
+sub url { shift->url_base }
+
 sub theme { 'dark_sky' }
 
-sub theme_path {
+sub url_theme {
     my $self = shift;
-    return $self->url.'/media/'.$self->theme;
+    return $self->url_base.'/media/'.$self->theme;
 }
 
 ###---------------------------------------------------------------###
@@ -64,8 +66,8 @@ sub hash_base {
         header_path => "$path/header.html",
         footer_path => "$path/footer.html",
         app_title   => 'Scribe',
-        css         => $self->theme_path.'/style.css',
-        url         => $self->url.'/cgi/scribe/',
+        css         => $self->url_theme.'/style.css',
+        url         => $self->url,
     };
 }
 
@@ -83,7 +85,7 @@ sub table2pkg {
 sub main_hash_swap {
     my $self  = shift;
     return {
-        css_step => $self->theme_path."/main.css",
+        css_step => $self->url_theme."/main.css",
         section => 'Main',
     }
 }
