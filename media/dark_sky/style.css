@@ -2,7 +2,7 @@ body {
     font-family: "Arial";
     margin: 0;
     padding: 0;
-    color: #06BDFA;
+    color: #373737;
     background-color: #FDFDFD;
 }
 
@@ -25,6 +25,7 @@ h1 {
     height: 1.55em;
     background-color: #373737;
     padding: .5em 1em .5em 1em;
+    color: #06BDFA;
 }
 
 #content {
@@ -47,18 +48,35 @@ a {
 }
 
 a:link {
-    color: white;
+    color: #373737;
 }
 
 a:visited {
-    color: white;
+    color: #373737;
 }
 
 a:hover {
-    color: #A4A4A4;
+    color: #06BDFA;
 }
 
 a:active {
+    color: #848484;
+}
+
+
+a.header:link {
+    color: white;
+}
+
+a.header:visited {
+    color: white;
+}
+
+a.header:hover {
+    color: #06BDFA;
+}
+
+a.header:active {
     color: #848484;
 }
 
@@ -83,5 +101,9 @@ a.title:active {
     color: #06BDFA;
 }
 
-
+span.seperator {
+    color: #06BDFA;
+    margin: .25em;
+    padding: .25em;
+}
 
