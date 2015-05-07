@@ -1,0 +1,8 @@
+[% INCLUDE scribe/header.html %]
+        <div style="background-color:#373737; margin:.25em; padding:.25em 1em .25em 1em;">
+            [%- FOREACH table IN tables %]
+            <a href="[%- url %]/[%- table %].cgi">[%- table %]</a><br>
+            [%- END %]
+        </div>
+[% INCLUDE scribe/footer.html %]
+
