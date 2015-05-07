@@ -68,7 +68,7 @@ sub add_hash_validation {
 sub add_finalize {
     my $self  = shift;
     my $table = $self->table;
-    my $form  = shift || $self->form;
+    my $form  = $self->form;
 
     my %args;
     my $schema = $self->schema;
