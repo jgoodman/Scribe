@@ -17,6 +17,13 @@ sub hash_base {
     return $hash;
 }
 
+sub url {
+    my $self = shift;
+    return $self->SUPER::url.'/db/'.$self->table.'.cgi';
+}
+
+sub url_list { return shift->url . '/list' }
+
 ###---------------------------------------------------------------###
 # main step
 
@@ -43,11 +50,11 @@ sub add_hash_swap {
         push @cols, $col;
     }
 
-    my $theme_path = $self->theme_path;
+    my $url_theme = $self->url_theme;
     return {
-        css_step => "$theme_path/$table.css",
+        css_step => "$url_theme/$table.css",
         section  => $self->table2pkg($table, ' ').' - Add',
-        css_crud => "$theme_path/add.css",
+        css_crud => "$url_theme/add.css",
         columns  => \@cols,
     }
 }
@@ -81,7 +88,7 @@ sub add_finalize {
     # TODO figure out and code below on what gets returned here
     $self->add_to_form($hash);
     my $c = $self->config;
-    $self->cgix->location_bounce('http://'.$c->server_url.'/'.$c->app_dirname.'cgi/scribe/list');
+    $self->cgix->location_bounce($self->url_list);
     return 0;
 }
 
@@ -96,10 +103,10 @@ sub delete_hash_swap {
     my $pkg    = $self->table2pkg($table);
     my @cols   = $schema->source($pkg)->columns;
 
-    my $theme_path = $self->theme_path;
+    my $url_theme = $self->url_theme;
     return {
-        css_step => "$theme_path/$table.css",
-        css_crud => "$theme_path/delete.css",
+        css_step => "$url_theme/$table.css",
+        css_crud => "$url_theme/delete.css",
         section  => $self->table2pkg($table, ' ').' - Delete',
         columns  => \@cols,
     }
@@ -126,7 +133,7 @@ sub delete_finalize {
     # TODO figure out and code below on what gets returned here
     $self->add_to_form($hash);
     my $c = $self->config;
-    $self->cgix->location_bounce('http://'.$c->server_url.'/'.$c->app_dirname.'cgi/scribe/list');
+    $self->cgix->location_bounce($self->url_list);
     return 0;
 }
 
@@ -153,10 +160,10 @@ sub list_hash_swap {
         push @rows, \@data;
     }
 
-    my $theme_path = $self->theme_path;
+    my $url_theme = $self->url_theme;
     return {
-        css_step => "$theme_path/$table.css",
-        css_crud => "$theme_path/list.css",
+        css_step => "$url_theme/$table.css",
+        css_crud => "$url_theme/list.css",
         rows     => \@rows,
         columns  => \@cols,
         section  => $self->table2pkg($table, ' ').' - List',
@@ -169,10 +176,10 @@ sub list_hash_swap {
 sub update_hash_swap {
     my $self  = shift;
     my $table = $self->table;
-    my $theme_path = $self->theme_path;
+    my $url_theme = $self->url_theme;
     return {
-        css_step => "$theme_path/$table.css",
-        css_crud => "$theme_path/list.css",
+        css_step => "$url_theme/$table.css",
+        css_crud => "$url_theme/list.css",
         section  => $self->table2pkg($table, ' ').' - Update',
     }
 }
@@ -199,7 +206,7 @@ sub update_finalize {
     # TODO figure out and code below on what gets returned here
     $self->add_to_form($hash);
     my $c = $self->config;
-    $self->cgix->location_bounce('http://'.$c->server_url.'/'.$c->app_dirname.'cgi/scribe/list');
+    $self->cgix->location_bounce($self->url_list);
     return 0;
 }
 
