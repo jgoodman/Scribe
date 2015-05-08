@@ -16,6 +16,13 @@ sub name_module { 'scribe/db/tables' }
 
 sub url { shift->SUPER::url.'/db' }
 
+sub hash_base {
+    my $self = shift;
+    my $hash = $self->SUPER::hash_base(@_);
+    $hash->{'app_title'} .= 'DB';
+    return $hash;
+}
+
 sub main_hash_swap {
     my $self = shift;
     my $hash = $self->SUPER::main_hash_swap;
