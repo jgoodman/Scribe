@@ -1,6 +1,6 @@
 -- 
 -- Created by SQL::Translator::Producer::PostgreSQL
--- Created on Wed May  6 04:51:33 2015
+-- Created on Fri May  8 16:53:38 2015
 -- 
 --
 -- Table: access_user
@@ -44,7 +44,7 @@ CREATE TABLE label (
   name text NOT NULL,
   color text NOT NULL,
   PRIMARY KEY (label_id),
-  CONSTRAINT label_unique_key_name UNIQUE (name)
+  CONSTRAINT label__unique_key__name UNIQUE (name)
 );
 
 --
@@ -113,11 +113,25 @@ CREATE INDEX place_meta_idx_place_id on place_meta (place_id);
 DROP TABLE project CASCADE;
 CREATE TABLE project (
   project_id serial NOT NULL,
+  number integer,
   name text NOT NULL,
   group_id integer,
   PRIMARY KEY (project_id)
 );
 CREATE INDEX project_idx_group_id on project (group_id);
+
+--
+-- Table: chapter
+--
+DROP TABLE chapter CASCADE;
+CREATE TABLE chapter (
+  chapter_id serial NOT NULL,
+  number integer NOT NULL,
+  name text,
+  project_id integer NOT NULL,
+  PRIMARY KEY (chapter_id)
+);
+CREATE INDEX chapter_idx_project_id on chapter (project_id);
 
 --
 -- Table: character_goal
@@ -168,6 +182,19 @@ CREATE INDEX place_note_idx_note_id on place_note (note_id);
 CREATE INDEX place_note_idx_place_id on place_note (place_id);
 
 --
+-- Table: scene
+--
+DROP TABLE scene CASCADE;
+CREATE TABLE scene (
+  scene_id serial NOT NULL,
+  number integer NOT NULL,
+  name text,
+  chapter_id integer NOT NULL,
+  PRIMARY KEY (scene_id)
+);
+CREATE INDEX scene_idx_chapter_id on scene (chapter_id);
+
+--
 -- Foreign Key Definitions
 --
 
@@ -182,6 +209,9 @@ ALTER TABLE place_meta ADD CONSTRAINT place_meta_fk_place_id FOREIGN KEY (place_
 
 ALTER TABLE project ADD CONSTRAINT project_fk_group_id FOREIGN KEY (group_id)
   REFERENCES project_group (group_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
+
+ALTER TABLE chapter ADD CONSTRAINT chapter_fk_project_id FOREIGN KEY (project_id)
+  REFERENCES project (project_id) DEFERRABLE;
 
 ALTER TABLE character_goal ADD CONSTRAINT character_goal_fk_character_id FOREIGN KEY (character_id)
   REFERENCES character (character_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
@@ -206,4 +236,7 @@ ALTER TABLE place_note ADD CONSTRAINT place_note_fk_note_id FOREIGN KEY (note_id
 
 ALTER TABLE place_note ADD CONSTRAINT place_note_fk_place_id FOREIGN KEY (place_id)
   REFERENCES place (place_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
+
+ALTER TABLE scene ADD CONSTRAINT scene_fk_chapter_id FOREIGN KEY (chapter_id)
+  REFERENCES chapter (chapter_id) DEFERRABLE;
 
