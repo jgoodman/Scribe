@@ -1,6 +1,6 @@
 -- 
 -- Created by SQL::Translator::Producer::PostgreSQL
--- Created on Fri May  8 16:53:38 2015
+-- Created on Fri May  8 18:08:54 2015
 -- 
 --
 -- Table: access_user
@@ -23,6 +23,17 @@ CREATE TABLE character (
   character_id serial NOT NULL,
   name text,
   PRIMARY KEY (character_id)
+);
+
+--
+-- Table: document
+--
+DROP TABLE document CASCADE;
+CREATE TABLE document (
+  document_id serial NOT NULL,
+  name text,
+  url_address text NOT NULL,
+  PRIMARY KEY (document_id)
 );
 
 --
