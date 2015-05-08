@@ -24,7 +24,25 @@ Scribe::Schema::Result::ProjectGroup
 
 =head1 SYNOPSIS
 
-This module abstracts "project_group"
+This module abstracts "project_group",
+which represents a collection of projects that relate to each other.
+This is synonymous to a "book series" but we cannot really call it
+that since not all projects are books; A project could be a short story
+hence this module having an ambigious name.
+
+=head1 COLUMNS
+
+=over
+
+=item group_id
+
+Primary key
+
+=item name
+
+String value, name of the group
+
+=back
 
 =head1 METHODS
 
