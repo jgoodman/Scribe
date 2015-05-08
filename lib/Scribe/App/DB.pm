@@ -75,7 +75,7 @@ sub add_finalize {
     my $pkg    = $self->table2pkg($table);
     foreach my $col ($schema->source($pkg)->columns) {
         my $value = $form->{$col};
-        next unless defined $value;
+        next unless defined $value && $value ne '';
         $args{$col} = $value;
     }
     $schema->resultset($pkg)->create(\%args);
