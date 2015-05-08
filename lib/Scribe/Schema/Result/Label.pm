@@ -13,7 +13,7 @@ __PACKAGE__->add_columns(
 );
 
 __PACKAGE__->set_primary_key('label_id');
-__PACKAGE__->add_unique_constraint(label_unique_key_name => [ qw/name/ ]);
+__PACKAGE__->add_unique_constraint(label__unique_key__name => [ qw/name/ ]);
 __PACKAGE__->has_many(notes => 'Scribe::Schema::Result::Note', 'note_id');
 
 1;
