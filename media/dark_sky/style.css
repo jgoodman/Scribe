@@ -1,9 +1,16 @@
+html {
+    width: 100%;
+    height: 100%;
+}
+
 body {
     font-family: "Arial";
     margin: 0;
     padding: 0;
     color: #373737;
     background-color: #FDFDFD;
+    width: 100%;
+    height: 100%;
 }
 
 h1 {
@@ -107,3 +114,10 @@ span.seperator {
     padding: .25em;
 }
 
+iframe.document {
+    margin: 0;
+    padding: 0;
+    border: none;
+    width: 100%;
+    height: 100%;
+}

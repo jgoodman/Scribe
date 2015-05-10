@@ -19,7 +19,8 @@ sub config { 'Scribe::_Config' }
 
 sub app_path {
     my $self = shift;
-    return $self->config->webroot.'/'.$self->config->app_dirname;
+    my $conf = $self->config;
+    return $conf->webroot.'/'.$conf->app_dirname;
 };
 
 sub template_path { shift->app_path . '/tt' }
@@ -28,7 +29,8 @@ sub name_module { 'scribe' }
 
 sub url_base {
     my $self = shift;
-    return 'http://'. $self->config->server_url .'/'. $self->config->app_dirname;
+    my $conf = $self->config;
+    return 'http://'. $conf->server_url .'/'. $conf->app_dirname;
 }
 
 sub url { shift->url_base }
@@ -47,8 +49,11 @@ our $SCHEMA;
 sub schema {
     my $self = shift;
     return $SCHEMA ||= do {
-        my $c = ref $self->can('config') ? $self->config : config() ;
-        Scribe::Schema->connect('dbi:Pg:database='.$c->dbname.';host='.$c->dbhost.';port=5432', $c->dbuser, $c->dbpass);
+        my $conf = ref $self->can('config') ? $self->config : config() ;
+        my $dbname = $conf->dbname;
+        my $dbhost = $conf->dbhost;
+        my $dbport = $conf->dbport;
+        Scribe::Schema->connect("dbi:Pg:database=$dbname;host=$dbhost;port=$dbport", $conf->dbuser, $conf->dbpass);
     }
 }
 

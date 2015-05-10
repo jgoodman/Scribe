@@ -1,6 +1,6 @@
 -- 
 -- Created by SQL::Translator::Producer::PostgreSQL
--- Created on Fri May  8 18:08:54 2015
+-- Created on Sun May 10 18:16:19 2015
 -- 
 --
 -- Table: access_user
@@ -33,7 +33,8 @@ CREATE TABLE document (
   document_id serial NOT NULL,
   name text,
   url_address text NOT NULL,
-  PRIMARY KEY (document_id)
+  PRIMARY KEY (document_id),
+  CONSTRAINT document__unique_key__url_address UNIQUE (url_address)
 );
 
 --
@@ -92,20 +93,6 @@ CREATE TABLE character_meta (
 CREATE INDEX character_meta_idx_character_id on character_meta (character_id);
 
 --
--- Table: note
---
-DROP TABLE note CASCADE;
-CREATE TABLE note (
-  note_id serial NOT NULL,
-  name text,
-  text text,
-  label_id integer,
-  weight integer,
-  PRIMARY KEY (note_id)
-);
-CREATE INDEX note_idx_label_id on note (label_id);
-
---
 -- Table: place_meta
 --
 DROP TABLE place_meta CASCADE;
@@ -157,6 +144,35 @@ CREATE INDEX character_goal_idx_character_id on character_goal (character_id);
 CREATE INDEX character_goal_idx_goal_id on character_goal (goal_id);
 
 --
+-- Table: note
+--
+DROP TABLE note CASCADE;
+CREATE TABLE note (
+  note_id serial NOT NULL,
+  name text,
+  text text,
+  label_id integer,
+  weight integer,
+  document_id integer,
+  PRIMARY KEY (note_id)
+);
+CREATE INDEX note_idx_document_id on note (document_id);
+CREATE INDEX note_idx_label_id on note (label_id);
+
+--
+-- Table: scene
+--
+DROP TABLE scene CASCADE;
+CREATE TABLE scene (
+  scene_id serial NOT NULL,
+  number integer NOT NULL,
+  name text,
+  chapter_id integer NOT NULL,
+  PRIMARY KEY (scene_id)
+);
+CREATE INDEX scene_idx_chapter_id on scene (chapter_id);
+
+--
 -- Table: character_note
 --
 DROP TABLE character_note CASCADE;
@@ -193,27 +209,11 @@ CREATE INDEX place_note_idx_note_id on place_note (note_id);
 CREATE INDEX place_note_idx_place_id on place_note (place_id);
 
 --
--- Table: scene
---
-DROP TABLE scene CASCADE;
-CREATE TABLE scene (
-  scene_id serial NOT NULL,
-  number integer NOT NULL,
-  name text,
-  chapter_id integer NOT NULL,
-  PRIMARY KEY (scene_id)
-);
-CREATE INDEX scene_idx_chapter_id on scene (chapter_id);
-
---
 -- Foreign Key Definitions
 --
 
 ALTER TABLE character_meta ADD CONSTRAINT character_meta_fk_character_id FOREIGN KEY (character_id)
   REFERENCES character (character_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
-
-ALTER TABLE note ADD CONSTRAINT note_fk_label_id FOREIGN KEY (label_id)
-  REFERENCES label (label_id) DEFERRABLE;
 
 ALTER TABLE place_meta ADD CONSTRAINT place_meta_fk_place_id FOREIGN KEY (place_id)
   REFERENCES place (place_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
@@ -229,6 +229,15 @@ ALTER TABLE character_goal ADD CONSTRAINT character_goal_fk_character_id FOREIGN
 
 ALTER TABLE character_goal ADD CONSTRAINT character_goal_fk_goal_id FOREIGN KEY (goal_id)
   REFERENCES goal (goal_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
+
+ALTER TABLE note ADD CONSTRAINT note_fk_document_id FOREIGN KEY (document_id)
+  REFERENCES document (document_id) DEFERRABLE;
+
+ALTER TABLE note ADD CONSTRAINT note_fk_label_id FOREIGN KEY (label_id)
+  REFERENCES label (label_id) DEFERRABLE;
+
+ALTER TABLE scene ADD CONSTRAINT scene_fk_chapter_id FOREIGN KEY (chapter_id)
+  REFERENCES chapter (chapter_id) DEFERRABLE;
 
 ALTER TABLE character_note ADD CONSTRAINT character_note_fk_character_id FOREIGN KEY (character_id)
   REFERENCES character (character_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
@@ -247,7 +256,4 @@ ALTER TABLE place_note ADD CONSTRAINT place_note_fk_note_id FOREIGN KEY (note_id
 
 ALTER TABLE place_note ADD CONSTRAINT place_note_fk_place_id FOREIGN KEY (place_id)
   REFERENCES place (place_id) ON DELETE CASCADE ON UPDATE CASCADE DEFERRABLE;
-
-ALTER TABLE scene ADD CONSTRAINT scene_fk_chapter_id FOREIGN KEY (chapter_id)
-  REFERENCES chapter (chapter_id) DEFERRABLE;
 
