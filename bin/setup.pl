@@ -25,7 +25,6 @@ pod2usage(-exitval => 0, -verbose => 2) if $man;
 
 my $c = 'Scribe::_Config';
 use DBI;
-my $dbh = DBI->connect('dbi:Pg:database='.$c->dbname.';host='.$c->dbhost.';port=5432', $c->dbuser, $c->dbpass);
 my $schema = Scribe::Schema->connect('dbi:Pg:database='.$c->dbname.';host='.$c->dbhost.';port=5432', $c->dbuser, $c->dbpass);
 $schema->deploy( { add_drop_table => 1 } );
 
