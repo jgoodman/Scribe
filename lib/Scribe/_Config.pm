@@ -8,6 +8,7 @@ sub webroot { die 'webroot not set' };
 sub app_dirname { die 'app_dirname not set' };
 sub dbhost { die 'dbhost not set' }
 sub dbname { die 'dbname not set' }
+sub dbport { 5432 }
 sub dbuser { die 'dbuser not set' }
 sub dbpass { die 'dbpass not set' }
 
@@ -65,6 +66,14 @@ Database name that Scribe will connect to.
 Example:
 
   sub dbname { 'scribe' }
+
+=head2 dbport
+
+Database name that Scribe will connect to.
+
+Example:
+
+  sub dbport { 5432 }
 
 =head2 dbuser
 
