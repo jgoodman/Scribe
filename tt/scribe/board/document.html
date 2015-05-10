@@ -1,0 +1,12 @@
+[%- INCLUDE scribe/header.html %]
+</div>
+</body>
+</html>
+[%- js_validation %]
+[%- IF error %]
+<b>Error! [%- error %]</b>
+[%- ELSIF document_url_address %]
+<iframe class="document" src="[%- document_url_address %]">Iframe broken! It's likely that this browser doe not support them.</iframe>
+[%- ELSE %]
+<b>No document url address passed into template. Was this page loaded without submitting form?</b>
+[%- END %]

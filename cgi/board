@@ -1,0 +1,126 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use cPanelUserConfig;
+
+use base qw(Scribe::App);
+use CGI::Ex::Die register => 1;
+use CGI::Ex::Dump qw(debug);
+
+__PACKAGE__->navigate;
+
+sub name_module { 'scribe/board' }
+
+sub url {
+    my $self = shift;
+    return $self->SUPER::url.'/cgi/board';
+}
+
+sub main_hash_swap {
+    my $self = shift;
+
+    my $hash = $self->SUPER::main_hash_swap;
+    $hash->{'section'} = 'Board';
+
+    my $notes = $self->schema->resultset('Note')->search();
+    my @rows;
+    while (my $note = $notes->next) {
+        my $doc = $note->document;
+        push @rows, {
+            note_id       => $note->note_id,
+            name          => $note->name,
+            text          => $note->text,
+            color         => $note->label->color,
+            document_id   => $doc->document_id,
+            document_name => $doc->name || 'document',
+        };
+    }
+    $hash->{'notes'} = \@rows;
+
+    return $hash;
+}
+
+sub note_add_hash_swap {
+    my $self  = shift;
+    my $url_theme = $self->url_theme;
+    return {
+        section  => 'Board - Note Add',
+        css_crud => "$url_theme/add.css",
+    }
+}
+
+sub note_add_hash_validation {
+    my $self = shift;
+    # TODO: Create validation here
+    return { }
+}
+
+sub note_add_finalize {
+    my $self = shift;
+    my %form = %{ $self->form };
+
+    my $color = delete $form{'color'};
+    if(defined $color && $color ne '') {
+        my $label = $self->schema->resultset('Label')->find_or_create({ color => $color, name => $color });
+        $form{'label_id'} = $label->label_id;
+    }
+
+    my $url = delete $form{'document_url_address'};
+    if(defined $url && $url ne '') {
+        my $document = $self->schema->resultset('Document')->find_or_create({ url_address => $url });
+        $form{'document_id'} = $document->document_id;
+    }
+
+    my %args;
+    my $schema = $self->schema;
+    my $pkg    = 'Note';
+    foreach my $col ($schema->source($pkg)->columns) {
+        my $value = $form{$col};
+        next unless defined $value;
+        $args{$col} = $value;
+    }
+    $schema->resultset($pkg)->create(\%args);
+
+    my $hash = {
+        success => 1, #TODO place holder for now.
+        error   => '', #errors go here
+    };
+
+    # TODO figure out and code below on what gets returned here
+    $self->add_to_form($hash);
+    $self->cgix->location_bounce($self->url);
+    return 0;
+}
+
+sub document_hash_swap {
+    my $self  = shift;
+    my $url_theme = $self->url_theme;
+    return {
+        section  => 'Document',
+        css_crud => "$url_theme/add.css",
+    }
+}
+
+sub document_hash_validation {
+    my $self = shift;
+    # TODO: Create validation here
+    return { }
+}
+
+sub document_finalize {
+    my $self = shift;
+    my $form = $self->form;
+
+    my %hash;
+    if(my $id = $form->{'document_id'}) {
+        my $document = $self->schema->resultset('Document')->find({ document_id => $id });
+        $hash{'document_url_address'} = $document->url_address;
+    }
+
+    $self->add_to_form(\%hash);
+    return 0;
+}
+
+

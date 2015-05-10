@@ -1,0 +1,14 @@
+[%- INCLUDE scribe/header.html %]
+    <div id="content">
+        [%- IF success %]
+        <b>Success!</b><br>
+        [%- ELSIF error %]
+        <b>Error!</b><br>
+        [%- END %]
+        <form name="[% form_name %]" method="post">
+            <span>note_id </span>
+            <input type="text" name="note_id">
+            <input type="submit">
+        </form>
+    </div>
+[%- INCLUDE scribe/footer.html %]
