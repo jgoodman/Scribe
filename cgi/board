@@ -24,20 +24,34 @@ sub main_hash_swap {
     my $hash = $self->SUPER::main_hash_swap;
     $hash->{'section'} = 'Board';
 
-    my $notes = $self->schema->resultset('Note')->search();
-    my @rows;
+    my $notes = $self->schema->resultset('Note')->search(
+        undef, { order_by => 'weight ASC, name ASC, note_id ASC' }
+    );
+    my $rows = [ ];
+    my $row = 0;
+    my $index = 0;
     while (my $note = $notes->next) {
-        my $doc = $note->document;
-        push @rows, {
+        my $hash = {
             note_id       => $note->note_id,
             name          => $note->name,
             text          => $note->text,
             color         => $note->label->color,
-            document_id   => $doc->document_id,
-            document_name => $doc->name || 'document',
+            document_id   => '',
+            document_name => '',
         };
+        if(my $doc = $note->document) {
+            $hash->{'document_id'}   = $doc->document_id;
+            $hash->{'document_name'} = $doc->name || 'document',
+        }
+        $rows->[$row] ||= [ ];
+        push @{$rows->[$row]}, $hash;
+        $index += 1;
+        if($index > 3) { # TODO: make this adjustable
+            $index = 0;
+            $row += 1;
+        }
     }
-    $hash->{'notes'} = \@rows;
+    $hash->{'rows'} = $rows;
 
     return $hash;
 }
@@ -83,6 +97,36 @@ sub note_add_finalize {
     }
     $schema->resultset($pkg)->create(\%args);
 
+    my $hash = {
+        success => 1, #TODO place holder for now.
+        error   => '', #errors go here
+    };
+
+    # TODO figure out and code below on what gets returned here
+    $self->add_to_form($hash);
+    $self->cgix->location_bounce($self->url);
+    return 0;
+}
+
+sub note_delete_hash_swap {
+    my $self  = shift;
+    my $url_theme = $self->url_theme;
+    return {
+        section  => 'Board - Note Delete',
+        css_crud => "$url_theme/delete.css",
+    }
+}
+
+sub note_delete_hash_validation {
+    my $self = shift;
+    # TODO: Create validation here
+    return { }
+}
+
+sub note_delete_finalize {
+    my $self = shift;
+    my $form = $self->form;
+    $self->schema->resultset('Note')->find({ note_id => $form->{'note_id'} })->delete;
     my $hash = {
         success => 1, #TODO place holder for now.
         error   => '', #errors go here

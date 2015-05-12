@@ -1,8 +1,21 @@
+.row {
+    height: 8em;
+    width: 100%;
+    float: left;
+}
+
 .note {
-    margin: .5em;
+    margin: .5em .5em .125em .5em;
     width: 16em;
     float: left;
     overflow: hidden;
+}
+
+.note-placeholder {
+    border: 1px dotted black;
+    margin: .5em .5em .125em .5em;
+    width: 16em;
+    height: 7em;
 }
 
 .note-header {
@@ -110,4 +123,8 @@
     margin: .125em;
     font-size: 6pt;
     float: right;
+}
+
+.note-url {
+    height: 1.25em;
 }

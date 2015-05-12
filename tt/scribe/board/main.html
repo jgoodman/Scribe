@@ -1,24 +1,30 @@
 [%- INCLUDE scribe/header.html %]
     <div id="content">
-        [%- FOREACH note IN notes %]
-        <div class="note">
-            <div class="note-header note-header-[%- note.color %]">
-                <span class="note-header-name">[%- note.name %]</span>
-                <form class="note-header-delete" action="[%- url %]/note_delete" name="[% form_name %]" method="post">
-                    <input class="note-header-delete" style="display: none;" name="note_id" value="[%- note.note_id %]"></input>
-                    <button class="note-header-delete" type="submit">x</button>
-                </form>
-            </div>
-            <div class="note-content">
-                <span>[%- note.text %]</span>
-            </div>
-            <div class="note-url">
-                <form action="[%- url %]/document" name="[% form_name %]" method="post">
-                    <input style="display: none;" name="document_id" value="[%- note.document_id %]"></input>
-                    <button type="submit">open [%- note.document_name %]</button>
-                </form>
-            </div>
-        </div>
+        [%- FOREACH row IN rows %]
+        <div class="row">
+        [%- FOREACH note IN row %]
+            <div class="note">
+                <div class="note-header note-header-[%- note.color %]">
+                    <span class="note-header-name">[%- note.name %]</span>
+                    <form class="note-header-delete" action="[%- url %]/note_delete" name="[% form_name %]" method="post">
+                        <input class="note-header-delete" style="display: none;" name="note_id" value="[%- note.note_id %]"></input>
+                        <button class="note-header-delete" type="submit">x</button>
+                    </form>
+                </div>
+                <div class="note-content">
+                    <span>[%- note.text %]</span>
+                </div>
+                <div class="note-url">
+                [%- IF note.document_id %]
+                    <form action="[%- url %]/document" name="[% form_name %]" method="post">
+                        <input style="display: none;" name="document_id" value="[%- note.document_id %]"></input>
+                        <button type="submit">open [%- note.document_name %]</button>
+                    </form>
+                [%- END %]
+                </div>
+            </div> <!-- End of Note [%- note.note_id %] -->
+        [%- END %]
+        </div> <!-- End of Row -->
         [%- END %]
     </div>
 [%- INCLUDE scribe/footer.html %]
@@ -26,4 +32,20 @@
 function add_note_div_show() {
     document.getElementById('add_note_div_show').style.display = "block";
 }
+</script>
+<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<script>
+$(function() {
+    $( ".row" ).sortable({
+        connectWith: ".row",
+        handle: ".note-header",
+        placeholder: "note-placeholder ui-corner-all"
+    });
+
+    $( ".note" )
+        .addClass( "ui-widget ui-widget-content ui-helper-clearfix ui-corner-all" )
+        .find( ".note-header" )
+            .addClass( "ui-widget-header ui-corner-all" )
+});
 </script>
