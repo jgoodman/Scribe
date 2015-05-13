@@ -20,11 +20,41 @@
       $( "#sortable" ).disableSelection();
     });
     </script>
+    <script>
+    $(document).ready(function(){
+        $("#hide").click(function(){
+            $("#dialog-note-update").hide();
+        });
+        $("#show").click(function(){
+            $("#dialog-note-update").show();
+        });
+    });
+    </script>
+    <script>
+    $(function() {
+        var dialog = $( "#dialog-note-update" ).dialog({
+            autoOpen: false,
+            height: 300,
+            width: 350,
+            modal: true,
+            close: function() {
+                allFields.removeClass( "ui-state-error" );
+            }
+        });
+        $( "#show-dialog-note-update" ).button().on( "click", function() {
+            dialog.dialog( "open" );
+        });
+    });
+    </script>
 </head>
 <body>
 <div id="wrapper">
     [%- INCLUDE scribe/header.html %]
     <div id="content">
+        <button id="show-dialog-note-update">update note</button>
+        <div id="dialog-note-update" title="Update Note" style="background-color:#F2F2F2;border: 2px solid black;">
+          <p>TODO! Implement This</p>
+        </div>
         <ul id="sortable">
             [%- FOREACH note IN notes %]
             <div class="note" id="note-id_[%- note.note_id %]">
