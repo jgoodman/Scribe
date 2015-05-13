@@ -52,7 +52,6 @@ sub add_hash_swap {
 
     my $url_theme = $self->url_theme;
     return {
-        css_step => "$url_theme/$table.css",
         section  => $self->table2pkg($table, ' ').' - Add',
         css_crud => "$url_theme/add.css",
         columns  => \@cols,
@@ -105,7 +104,6 @@ sub delete_hash_swap {
 
     my $url_theme = $self->url_theme;
     return {
-        css_step => "$url_theme/$table.css",
         css_crud => "$url_theme/delete.css",
         section  => $self->table2pkg($table, ' ').' - Delete',
         columns  => \@cols,
@@ -151,9 +149,15 @@ sub list_hash_swap {
     my $table  = $self->table;
     my $schema = $self->can('schema') ? $self->schema : schmea();
     my $pkg    = $self->table2pkg($table);
-    my $result = $schema->resultset($pkg)->search();
-    my @cols   = $schema->source($pkg)->columns;
+
+    my %attr;
+    my $source = $schema->source($pkg);
+    my ($primary_key) = $source->primary_columns;
+    $attr{'order_by'} = "$primary_key" if $primary_key;
+
     my @rows;
+    my $result = $schema->resultset($pkg)->search(undef, \%attr);
+    my @cols   = $source->columns;
     while (my $row = $result->next) {
         my @data;
         foreach my $col (@cols) { push @data, $row->$col }
@@ -162,7 +166,6 @@ sub list_hash_swap {
 
     my $url_theme = $self->url_theme;
     return {
-        css_step => "$url_theme/$table.css",
         css_crud => "$url_theme/list.css",
         rows     => \@rows,
         columns  => \@cols,
@@ -178,7 +181,6 @@ sub update_hash_swap {
     my $table = $self->table;
     my $url_theme = $self->url_theme;
     return {
-        css_step => "$url_theme/$table.css",
         css_crud => "$url_theme/list.css",
         section  => $self->table2pkg($table, ' ').' - Update',
     }

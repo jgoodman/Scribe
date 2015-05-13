@@ -1,24 +1,34 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-[%- INCLUDE scribe/head.html %]
-    <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
-    <script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    [%- INCLUDE scribe/head.html %]
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
     <script>
     $(function() {
-      $( "#sortable" ).sortable();
+      $( "#sortable" ).sortable({
+          stop: function (event, ui) {
+              var data = $(this).sortable('serialize');
+              $.ajax({
+                  data: data,
+                  type: 'POST',
+                  url: '[% url %]/cgi/board/note_order_update'
+              });
+          }
+      }
+      );
       $( "#sortable" ).disableSelection();
     });
-</script>
+    </script>
 </head>
 <body>
 <div id="wrapper">
-[%- INCLUDE scribe/header.html %]
+    [%- INCLUDE scribe/header.html %]
     <div id="content">
         <ul id="sortable">
             [%- FOREACH note IN notes %]
-            <div class="note">
-            <li class="ui-state-default" id="note_id_[%- note.note_id %]">
+            <div class="note" id="note-id_[%- note.note_id %]">
+            <li class="ui-state-default">
                 <div class="note-header note-header-[%- note.color %]">
                     <span class="note-header-name">[%- note.name %]</span>
                     <form class="note-header-delete" action="[%- url %]/note_delete" name="[% form_name %]" method="post">
@@ -38,7 +48,7 @@
                 [%- END %]
                 </div>
             </li>
-            </div> <!-- End of Note [%- note.note_id %] -->
+            </div>
             [%- END %]
         </ul>
     </div>

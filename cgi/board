@@ -130,6 +130,37 @@ sub note_delete_finalize {
     return 0;
 }
 
+sub note_order_update_hash_swap {
+    my $self  = shift;
+    my $url_theme = $self->url_theme;
+    return {
+        section  => 'Document',
+        css_crud => "$url_theme/add.css",
+    }
+}
+
+sub note_order_update_hash_validation {
+    my $self = shift;
+    # TODO: Create validation here
+    return { }
+}
+
+sub note_order_update_finalize {
+    my $self = shift;
+    my $form = $self->form;
+
+    if(my $note_ids = $form->{'note-id[]'}) {
+        my $weight = 0;
+        my $resultset = $self->schema->resultset('Note');
+        foreach my $note_id (@$note_ids) {
+            $resultset->find({ note_id => $note_id })->update({weight => $weight});
+            $weight += 1;
+        }
+    }
+
+    return 0;
+}
+
 sub document_hash_swap {
     my $self  = shift;
     my $url_theme = $self->url_theme;
