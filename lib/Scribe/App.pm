@@ -42,6 +42,8 @@ sub url_theme {
     return $self->url_base.'/media/'.$self->theme;
 }
 
+sub url_js { shift->url_base.'/js' }
+
 ###---------------------------------------------------------------###
 # universal functions
 
@@ -71,8 +73,9 @@ sub hash_base {
         header_path => "$path/header.html",
         footer_path => "$path/footer.html",
         app_title   => 'Scribe',
-        css         => $self->url_theme.'/style.css',
         url         => $self->url,
+        url_css     => $self->url_theme,
+        url_js      => $self->url_js,
     };
 }
 

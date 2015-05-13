@@ -1,17 +1,28 @@
-[%- INCLUDE scribe/wrapper.html %]
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    [%- INCLUDE scribe/head.html %]
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="[% url_js %]/jquery.tablesorter.js"></script>
+</head>
+<body>
+<div id="wrapper">
+    [%- INCLUDE scribe/header.html %]
     <div id="content">
         [%- IF success %]
         <b>Success!</b><br>
         [%- ELSIF error %]
         <b>Error!</b><br>
         [%- END %]
-        <div class="list">
-            <table class="list">
-                <tr class="list">
-                [%- FOREACH column IN columns %]
-                    <th class="list">[%- column %]</th>
-                [%- END %]
-                </tr>
+        <div>
+            <table id="table-results" class="list">
+                <thead>
+                    <tr class="list">
+                    [%- FOREACH column IN columns %]
+                        <th class="list">[%- column %]</th>
+                    [%- END %]
+                    </tr>
+                </thead>
             [%- FOREACH row IN rows %]
                 <tr class="list">
                 [%- FOREACH col IN row %]
@@ -23,3 +34,9 @@
         </div>
     </div>
 [%- INCLUDE scribe/footer.html %]
+<script>
+$(function(){
+  $("#table-results").tablesorter();
+});
+</script>
+

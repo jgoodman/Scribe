@@ -1,5 +1,9 @@
 
     <title>[%- app_title %] - [%- section %] </title>
-    <link rel="stylesheet" type="text/css" href="[%- css %]">
+    <link rel="stylesheet" type="text/css" href="[%- url_css %]/style.css">
+    [%- IF css_step -%]
     <link rel="stylesheet" type="text/css" href="[%- css_step %]">
+    [%- END -%]
+    [%- IF css_crud -%]
     <link rel="stylesheet" type="text/css" href="[%- css_crud %]">
+    [%- END -%]
