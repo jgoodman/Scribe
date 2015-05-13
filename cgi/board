@@ -27,9 +27,7 @@ sub main_hash_swap {
     my $notes = $self->schema->resultset('Note')->search(
         undef, { order_by => 'weight ASC, name ASC, note_id ASC' }
     );
-    my $rows = [ ];
-    my $row = 0;
-    my $index = 0;
+    my @rows;
     while (my $note = $notes->next) {
         my $hash = {
             note_id       => $note->note_id,
@@ -43,15 +41,9 @@ sub main_hash_swap {
             $hash->{'document_id'}   = $doc->document_id;
             $hash->{'document_name'} = $doc->name || 'document',
         }
-        $rows->[$row] ||= [ ];
-        push @{$rows->[$row]}, $hash;
-        $index += 1;
-        if($index > 3) { # TODO: make this adjustable
-            $index = 0;
-            $row += 1;
-        }
+        push @rows, $hash;
     }
-    $hash->{'rows'} = $rows;
+    $hash->{'notes'} = \@rows;
 
     return $hash;
 }

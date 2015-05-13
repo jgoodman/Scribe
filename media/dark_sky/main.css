@@ -1,21 +1,8 @@
-.row {
-    height: 8em;
-    width: 100%;
-    float: left;
-}
-
 .note {
     margin: .5em .5em .125em .5em;
     width: 16em;
     float: left;
     overflow: hidden;
-}
-
-.note-placeholder {
-    border: 1px dotted black;
-    margin: .5em .5em .125em .5em;
-    width: 16em;
-    height: 7em;
 }
 
 .note-header {

@@ -1,9 +1,24 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+[%- INCLUDE scribe/head.html %]
+    <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    <script>
+    $(function() {
+      $( "#sortable" ).sortable();
+      $( "#sortable" ).disableSelection();
+    });
+</script>
+</head>
+<body>
+<div id="wrapper">
 [%- INCLUDE scribe/header.html %]
     <div id="content">
-        [%- FOREACH row IN rows %]
-        <div class="row">
-        [%- FOREACH note IN row %]
+        <ul id="sortable">
+            [%- FOREACH note IN notes %]
             <div class="note">
+            <li class="ui-state-default" id="note_id_[%- note.note_id %]">
                 <div class="note-header note-header-[%- note.color %]">
                     <span class="note-header-name">[%- note.name %]</span>
                     <form class="note-header-delete" action="[%- url %]/note_delete" name="[% form_name %]" method="post">
@@ -22,30 +37,9 @@
                     </form>
                 [%- END %]
                 </div>
+            </li>
             </div> <!-- End of Note [%- note.note_id %] -->
-        [%- END %]
-        </div> <!-- End of Row -->
-        [%- END %]
+            [%- END %]
+        </ul>
     </div>
 [%- INCLUDE scribe/footer.html %]
-<script>
-function add_note_div_show() {
-    document.getElementById('add_note_div_show').style.display = "block";
-}
-</script>
-<script src="//code.jquery.com/jquery-1.10.2.js"></script>
-<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
-<script>
-$(function() {
-    $( ".row" ).sortable({
-        connectWith: ".row",
-        handle: ".note-header",
-        placeholder: "note-placeholder ui-corner-all"
-    });
-
-    $( ".note" )
-        .addClass( "ui-widget ui-widget-content ui-helper-clearfix ui-corner-all" )
-        .find( ".note-header" )
-            .addClass( "ui-widget-header ui-corner-all" )
-});
-</script>
