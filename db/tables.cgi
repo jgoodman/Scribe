@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use FindBin qw($Bin);
 
-use cPanelUserConfig;
+eval { use cPanelUserConfig };
 
 use base qw(Scribe::App);
 use CGI::Ex::Die register => 1;

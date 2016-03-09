@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use cPanelUserConfig;
+eval { use cPanelUserConfig };
 
 use base qw(Scribe::App);
 use CGI::Ex::Die register => 1;
@@ -17,6 +17,35 @@ sub url {
     my $self = shift;
     return $self->SUPER::url.'/cgi/board';
 }
+
+
+###-----------------------------------------------------------------###
+
+
+sub msg_queue_file { '.msg_queue' }
+
+sub set_success {
+    my $self = shift;
+    my $msg  = shift;
+    open(my $fh, '>>', $self->msg_queue_file) or return;
+    print $fh "$msg\n";
+    close $fh;
+}
+
+sub get_success {
+    my $self = shift;
+    my $file = $self->msg_queue_file;
+    return unless -e $file;
+    open(my $fh, '<', $file) or return;
+    my @rows = <$fh>;
+    close $fh;
+    unlink $file;
+    return join("<br />", @rows);
+}
+
+
+###-----------------------------------------------------------------###
+
 
 sub main_hash_swap {
     my $self = shift;
@@ -39,21 +68,38 @@ sub main_hash_swap {
         };
         if(my $doc = $note->document) {
             $hash->{'document_id'}   = $doc->document_id;
-            $hash->{'document_name'} = $doc->name || 'document',
+            $hash->{'document_name'} = $doc->name,
         }
         push @rows, $hash;
     }
     $hash->{'notes'} = \@rows;
+    $hash->{'success'} = $self->get_success;
 
     return $hash;
 }
 
-sub note_add_hash_swap {
-    my $self  = shift;
+
+###-----------------------------------------------------------------###
+
+
+sub note_add_hash_swap { shift->_common_note_swap('add') }
+
+sub _common_note_swap {
+    my $self = shift;
+    my $crud = shift || die '$crud missing';
     my $url_theme = $self->url_theme;
     return {
-        section  => 'Board - Note Add',
+        section  => 'Board - '.ucfirst($crud).' Note',
         css_crud => "$url_theme/add.css",
+        places   => [ '', map { $_->name } $self->schema->resultset('Place')->search() ],
+        labels   => [
+            map  { {
+                name => $_->name,
+                color => $_->color,
+                label_id => $_->label_id
+            } }
+            $self->schema->resultset('Label')->search({}, { order_by => { -asc => [qw/name/] } } )
+        ],
     }
 }
 
@@ -67,47 +113,138 @@ sub note_add_finalize {
     my $self = shift;
     my %form = %{ $self->form };
 
-    my $color = delete $form{'color'};
-    if(defined $color && $color ne '') {
-        my $label = $self->schema->resultset('Label')->find_or_create({ color => $color, name => $color });
-        $form{'label_id'} = $label->label_id;
-    }
-
     my $url = delete $form{'document_url_address'};
     if(defined $url && $url ne '') {
         my $document = $self->schema->resultset('Document')->find_or_create({ url_address => $url });
         $form{'document_id'} = $document->document_id;
     }
 
+    $self->_add('Note', \%form);
+}
+
+sub _add {
+    my $self = shift;
+    my $pkg  = shift || die '$pkg missing';
+    my $form = shift || { %{ $self->form } };
+
     my %args;
     my $schema = $self->schema;
+    my $source = $schema->source($pkg);
+
+    my @pc = $source->primary_columns;
+    die 'TODO! Not sure how to handle multiple primary columns' if scalar @pc > 1;
+    my $primary_col = $pc[0];
+
+    foreach my $col ($source->columns) {
+        my $value = $form->{$col};
+        next unless defined $value;
+        $args{$col} = $value;
+    }
+    my $id = $schema->resultset($pkg)->create(\%args)->$primary_col;
+
+    $self->set_success("$pkg #$id Added");
+
+    $self->cgix->location_bounce($self->url);
+    return 0;
+
+}
+
+###-----------------------------------------------------------------###
+
+
+sub note_update_skip { shift->form->{'note_id'} ? 0 : 1 }
+
+sub note_update_hash_common {
+    my $self = shift;
+
+    my $ret = $self->_common_note_swap('update');
+    return $ret if $self->ready_validate;
+
+    $ret->{'places'} = [ '', map { $_->name } $self->schema->resultset('Place')->search() ];
+
+    my %form = %{ $self->form };
+    
+    my $note = $self->schema->resultset('Note')->find({ note_id => $form{'note_id'} }) or die 'Note not found';
+    
+    # TODO DBIx::Class has a way to access this data more easily
+    my $label = $self->schema->resultset('Label')->find({ label_id => $note->label_id });
+    $note->{'color'} = $label->color;
+
+    # TODO DBIx::Class has a way to access this data more easily
+    my $document = $self->schema->resultset('Document')->find({ document_id => $note->document_id });
+    $note->{'document_url_address'} = $document->url_address if $document;
+
+    $ret->{'note'} = $note; # TODO don't pass in the entire obj back into the template
+    return $ret;
+}
+
+sub note_update_hash_validation { shift->note_add_hash_validation(@_) }
+
+sub note_update_finalize {
+    my $self = shift;
+    my %form = %{ $self->form };
+
     my $pkg    = 'Note';
+    my $schema = $self->schema;
+    my $note   = $schema->resultset($pkg)->find({ note_id => $form{'note_id'} }) or die 'Note not found';
+
+    $form{'document_id'} = undef unless exists $form{'document_id'};
+    my $url = delete $form{'document_url_address'};
+    if(defined $url && $url ne '') {
+        my $document = $schema->resultset('Document')->find_or_create({ url_address => $url });
+        $form{'document_id'} = $document->document_id if $document;
+    }
+
+    my %args;
     foreach my $col ($schema->source($pkg)->columns) {
+        next if $col eq 'note_id';
         my $value = $form{$col};
         next unless defined $value;
         $args{$col} = $value;
     }
-    $schema->resultset($pkg)->create(\%args);
+    my $id = $note->update(\%args)->note_id;
 
-    my $hash = {
-        success => 1, #TODO place holder for now.
-        error   => '', #errors go here
-    };
+    $self->set_success("Note #$id Updated");
 
-    # TODO figure out and code below on what gets returned here
-    $self->add_to_form($hash);
     $self->cgix->location_bounce($self->url);
     return 0;
 }
 
+sub note_update_hash_validation {
+    my $self = shift;
+    # TODO: Create validation here
+    return { }
+}
+
+
+###-----------------------------------------------------------------###
+
+
 sub note_delete_hash_swap {
     my $self  = shift;
+    
+    my %form = %{$self->form};
+
+    if(my $id = $form{'note_id'}) {
+        $self->schema->resultset('Note')->find({ note_id => $id })->delete;
+        $self->set_success("Note #$id Deleted");
+        $self->cgix->location_bounce($self->url);
+        return 0;
+    }
+
+    $self->_common_swap('Delete Note');
+}
+
+sub _common_swap {
+    my $self = shift;
+    my $headline = shift || die '$headline missing';
     my $url_theme = $self->url_theme;
     return {
-        section  => 'Board - Note Delete',
-        css_crud => "$url_theme/delete.css",
+        section  => $headline,
+        css_crud => "$url_theme/add.css", # TODO make common.css?
     }
 }
+
 
 sub note_delete_hash_validation {
     my $self = shift;
@@ -115,29 +252,11 @@ sub note_delete_hash_validation {
     return { }
 }
 
-sub note_delete_finalize {
-    my $self = shift;
-    my $form = $self->form;
-    $self->schema->resultset('Note')->find({ note_id => $form->{'note_id'} })->delete;
-    my $hash = {
-        success => 1, #TODO place holder for now.
-        error   => '', #errors go here
-    };
 
-    # TODO figure out and code below on what gets returned here
-    $self->add_to_form($hash);
-    $self->cgix->location_bounce($self->url);
-    return 0;
-}
+###-----------------------------------------------------------------###
 
-sub note_order_update_hash_swap {
-    my $self  = shift;
-    my $url_theme = $self->url_theme;
-    return {
-        section  => 'Document',
-        css_crud => "$url_theme/add.css",
-    }
-}
+
+sub note_order_update_hash_swap { shift->_common_swap('Update Note Order') }
 
 sub note_order_update_hash_validation {
     my $self = shift;
@@ -161,13 +280,23 @@ sub note_order_update_finalize {
     return 0;
 }
 
+
+###-----------------------------------------------------------------###
+
+
 sub document_hash_swap {
-    my $self  = shift;
+    my $self = shift;
+    my %form = %{$self->form};
+
     my $url_theme = $self->url_theme;
-    return {
-        section  => 'Document',
-        css_crud => "$url_theme/add.css",
+    my $hash = $self->_common_swap('Document');
+
+    if(my $id = $form{'document_id'}) {
+        my $document = $self->schema->resultset('Document')->find({ document_id => $id });
+        $hash->{'document_url_address'} = $document->url_address;
     }
+
+    return $hash;
 }
 
 sub document_hash_validation {
@@ -176,18 +305,61 @@ sub document_hash_validation {
     return { }
 }
 
-sub document_finalize {
+
+###-----------------------------------------------------------------###
+
+
+sub place_add_hash_swap { shift->_common_swap('Add Place') }
+
+sub place_add_hash_validation {
     my $self = shift;
-    my $form = $self->form;
+    # TODO: Create validation here
+    return { }
+}
 
-    my %hash;
-    if(my $id = $form->{'document_id'}) {
-        my $document = $self->schema->resultset('Document')->find({ document_id => $id });
-        $hash{'document_url_address'} = $document->url_address;
-    }
+sub place_add_finalize { shift->_add('Place') }
 
-    $self->add_to_form(\%hash);
+
+###-----------------------------------------------------------------###
+
+sub access_user_update_hash_swap { shift->_common_swap('Update AccessUser') }
+
+sub access_user_update_hash_validation {
+    my $self = shift;
+    # TODO: Create validation here
+    return { }
+}
+
+sub access_user_update_finalize {
+    my $self = shift;
+    
+    $self->schema->resultset('AccessUser')
+        ->single({ name     => $self->auth_data->{'user'} })
+        ->update({ password => $self->form->{'password'} });
+
+    $self->set_success("AccessUser Updated");
+
+    $self->cgix->location_bounce($self->url);
     return 0;
 }
 
+
+###-----------------------------------------------------------------###
+
+
+sub more_tools_hash_swap { shift->_common_swap('More Tools') }
+
+
+###-----------------------------------------------------------------###
+
+
+sub label_add_hash_swap { shift->_common_swap('Add Label') }
+
+sub label_add_hash_validation {
+    my $self = shift;
+    # TODO: Create validation here
+    return { }
+}
+
+sub label_add_finalize { shift->_add('Label') }
 

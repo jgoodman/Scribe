@@ -40,27 +40,27 @@ td.add {
     padding: .25em;
 }
 
-#option-color-red {
+.option-color-red {
     background-color:red;
 }
 
-#option-color-orange {
+.option-color-orange {
     background-color:orange;
 }
 
-#option-color-yellow {
+.option-color-yellow {
     background-color:yellow;
 }
 
-#option-color-green {
+.option-color-green {
     background-color:green;
 }
 
-#option-color-blue {
+.option-color-blue {
     background-color:blue;
 }
 
-#option-color-purple {
+.option-color-purple {
     background-color:purple;
 }
 

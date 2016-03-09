@@ -51,35 +51,48 @@
 <div id="wrapper">
     [%- INCLUDE scribe/header.html %]
     <div id="content">
-        <button id="show-dialog-note-update">update note</button>
-        <div id="dialog-note-update" title="Update Note" style="background-color:#F2F2F2;border: 2px solid black;">
-          <p>TODO! Implement This</p>
-        </div>
-        <ul id="sortable">
-            [%- FOREACH note IN notes %]
-            <div class="note" id="note-id_[%- note.note_id %]">
-            <li class="ui-state-default">
-                <div class="note-header note-header-[%- note.color %]">
-                    <span class="note-header-name">[%- note.name %]</span>
-                    <form class="note-header-delete" action="[%- url %]/note_delete" name="[% form_name %]" method="post">
-                        <input class="note-header-delete" style="display: none;" name="note_id" value="[%- note.note_id %]"></input>
-                        <button class="note-header-delete" type="submit">x</button>
-                    </form>
-                </div>
-                <div class="note-content">
-                    <span>[%- note.text %]</span>
-                </div>
-                <div class="note-url">
-                [%- IF note.document_id %]
-                    <form action="[%- url %]/document" name="[% form_name %]" method="post">
-                        <input style="display: none;" name="document_id" value="[%- note.document_id %]"></input>
-                        <button type="submit">open [%- note.document_name %]</button>
-                    </form>
-                [%- END %]
-                </div>
-            </li>
+        <div style="padding: 0em .5em 0em .5em;">
+    	    <a href="[%- url %]/note_add">add note</a>
+    	    <span class="seperator">|</span>
+    	    <a href="[%- url %]/more_tools">more tools</a>
+    	</div>
+        <div>
+        [% IF success%]
+            <div id="contain-success">
+                <span>[% success %]</span>
             </div>
-            [%- END %]
-        </ul>
+            <script>
+                setTimeout(fade_out, 3000);
+
+                function fade_out() {
+                      $("#contain-success").fadeOut().empty();
+                }
+            </script>
+        </div>
+        [% END %]
+        <div id="contain-sortable">
+            <ul id="sortable">
+                [%- FOREACH note IN notes %]
+                <div class="note" id="note-id_[%- note.note_id %]">
+                <li class="ui-state-default">
+                    <div class="note-header note-header-[%- note.color %]">
+                        <span class="note-header-name">[%- note.name %]</span>
+                        <a class="note-header-delete" href="[%- url %]/note_delete?note_id=[% note.note_id%]" onclick="return confirm('This is a permanent deletion and cannot be undone. Are you sure you want to continue?')">X</a>
+                    </div>
+                    <div class="note-content">
+                        <span>[%- note.text %]</span>
+                    </div>
+                    <div class="note-url">
+                        <a href="[%- url %]/note_update?note_id=[% note.note_id%]">edit</a>
+                    [% IF note.document_id %]
+                        <span class="seperator" style="color:#373737;">|</span>
+                        <a href="[%- url %]/document?document_id=[% note.document_id%]">open</a>
+                    [%- END %]
+                    </div>
+                </li>
+                </div>
+                [%- END %]
+            </ul>
+        </div>
     </div>
 [%- INCLUDE scribe/footer.html %]
