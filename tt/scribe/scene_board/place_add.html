@@ -1,0 +1,15 @@
+[%- INCLUDE scribe/wrapper.html %]
+    <div id="content">
+        <div class="form">
+        <form name="[% form_name %]" method="post">
+            <input
+                class="name" type="text" name="name" value="Name"
+                onblur="if (this.value == '') {this.value = 'Name';}"
+                onfocus="if (this.value == 'Name') {this.value = '';}"
+                onclick="this.style.color='black';"
+            >
+            <input class="submit" type="submit">
+        </form>
+        </div>
+    </div>        
+[%- INCLUDE scribe/footer.html %]

@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    [%- INCLUDE scribe/head.html %]
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+    <script>
+    $(function() {
+      $( "#sortable" ).sortable({
+          stop: function (event, ui) {
+              var data = $(this).sortable('serialize');
+              $.ajax({
+                  data: data,
+                  type: 'POST',
+                  url: '[% url %]/scene_order_update'
+              });
+          }
+      }
+      );
+      $( "#sortable" ).disableSelection();
+    });
+    </script>
+    <script>
+    $(document).ready(function(){
+        $("#hide").click(function(){
+            $("#dialog-scene-update").hide();
+        });
+        $("#show").click(function(){
+            $("#dialog-scene-update").show();
+        });
+    });
+    </script>
+    <script>
+    $(function() {
+        var dialog = $( "#dialog-scene-update" ).dialog({
+            autoOpen: false,
+            height: 300,
+            width: 350,
+            modal: true,
+            close: function() {
+                allFields.removeClass( "ui-state-error" );
+            }
+        });
+        $( "#show-dialog-scene-update" ).button().on( "click", function() {
+            dialog.dialog( "open" );
+        });
+    });
+    </script>
+</head>
+<body>
+<div id="wrapper">
+    [%- INCLUDE scribe/header.html %]
+    <div id="content">
+        <div style="padding: 0em .5em 0em .5em;">
+    	    <a href="[%- url %]/scene_add">add scene</a>
+    	    <span class="seperator">|</span>
+    	    <a href="[%- url %]/more_tools">more tools</a>
+    	</div>
+        <div>
+        [% IF success%]
+            <div id="contain-success">
+                <span>[% success %]</span>
+            </div>
+            <script>
+                setTimeout(fade_out, 3000);
+
+                function fade_out() {
+                      $("#contain-success").fadeOut().empty();
+                }
+            </script>
+        </div>
+        [% END %]
+        <div id="contain-sortable">
+            <ul id="sortable">
+                [%- FOREACH scene IN scenes %]
+                <div class="scene" id="scene-id_[%- scene.scene_id %]">
+                <li class="ui-state-default">
+                    <div class="scene-header scene-header-[%- scene.color %]">
+                        <span class="scene-header-name">[%- scene.name %]</span>
+                        <a class="scene-header-delete" href="[%- url %]/scene_delete?scene_id=[% scene.scene_id%]" onclick="return confirm('This is a permanent deletion and cannot be undone. Are you sure you want to continue?')">X</a>
+                    </div>
+                    <div class="scene-content">
+                        <span>[%- scene.summary %]</span>
+                    </div>
+                    <div class="scene-url">
+                        <a href="[%- url %]/scene_update?scene_id=[% scene.scene_id%]">edit</a>
+                    [% IF scene.document_id %]
+                        <span class="seperator" style="color:#373737;">|</span>
+                        <a href="[%- url %]/document?document_id=[% scene.document_id%]">open</a>
+                    [%- END %]
+                    </div>
+                </li>
+                </div>
+                [%- END %]
+            </ul>
+        </div>
+    </div>
+[%- INCLUDE scribe/footer.html %]

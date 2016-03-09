@@ -1,0 +1,10 @@
+[%- INCLUDE scribe/wrapper.html -%]
+    <div id="content">
+        [%- IF error %]
+        <b>Error! [%- error %]</b>
+        [%- END %]
+        <form name="[% form_name %]" method="post">
+            <input type="submit">
+        </form>
+    </div>
+[% INCLUDE scribe/footer.html %]

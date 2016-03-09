@@ -11,11 +11,11 @@ use CGI::Ex::Dump qw(debug);
 
 __PACKAGE__->navigate;
 
-sub name_module { 'scribe/board' }
+sub name_module { 'scribe/scene_board' }
 
 sub url {
     my $self = shift;
-    return $self->SUPER::url.'/cgi/board';
+    return $self->SUPER::url.'/cgi/scene_board';
 }
 
 
@@ -51,28 +51,29 @@ sub main_hash_swap {
     my $self = shift;
 
     my $hash = $self->SUPER::main_hash_swap;
-    $hash->{'section'} = 'Board';
+    $hash->{'section'} = 'SceneBoard';
 
-    my $notes = $self->schema->resultset('Note')->search(
-        undef, { order_by => 'weight ASC, name ASC, note_id ASC' }
+    my $scenes = $self->schema->resultset('Scene')->search(
+        undef, { order_by => 'weight ASC, name ASC, scene_id ASC' }
     );
     my @rows;
-    while (my $note = $notes->next) {
+    while (my $scene = $scenes->next) {
         my $hash = {
-            note_id       => $note->note_id,
-            name          => $note->name,
-            text          => $note->text,
-            color         => $note->label->color,
+            scene_id      => $scene->scene_id,
+            name          => $scene->name,
+            summary       => $scene->summary,
+            color         => $scene->label->color,
             document_id   => '',
             document_name => '',
+            place_id      => $scene->place_id,
         };
-        if(my $doc = $note->document) {
+        if(my $doc = $scene->document) {
             $hash->{'document_id'}   = $doc->document_id;
             $hash->{'document_name'} = $doc->name,
         }
         push @rows, $hash;
     }
-    $hash->{'notes'} = \@rows;
+    $hash->{'scenes'} = \@rows;
     $hash->{'success'} = $self->get_success;
 
     return $hash;
@@ -82,34 +83,49 @@ sub main_hash_swap {
 ###-----------------------------------------------------------------###
 
 
-sub note_add_hash_swap { shift->_common_note_swap('add') }
+sub scene_add_hash_swap { shift->_common_scene_swap('add') }
 
-sub _common_note_swap {
+sub _common_scene_swap {
     my $self = shift;
     my $crud = shift || die '$crud missing';
     my $url_theme = $self->url_theme;
     return {
-        section  => 'Board - '.ucfirst($crud).' Note',
+        section  => ucfirst($crud).' Scene',
         css_crud => "$url_theme/add.css",
-        places   => [ '', map { $_->name } $self->schema->resultset('Place')->search() ],
-        labels   => [
-            map  { {
-                name => $_->name,
-                color => $_->color,
-                label_id => $_->label_id
-            } }
-            $self->schema->resultset('Label')->search({}, { order_by => { -asc => [qw/name/] } } )
-        ],
+        places   => $self->_flat_search('Place'),
+        labels   => $self->_flat_search('Label', undef, { order_by => { -asc => [qw/name/] } }),
     }
 }
 
-sub note_add_hash_validation {
+# query db with DBIx but convert and return
+# results as an array of hashes instead of objects
+sub _flat_search {
+    my $self = shift;
+    my $pkg  = shift || die '$pkg missing';
+
+    my $schema  = $self->schema;
+    my @columns = $schema->source($pkg)->columns;
+
+    my @rows;
+    my $results_obj = $schema->resultset($pkg)->search(@_);
+    while (my $row_obj = $results_obj->next) {
+        my %row_flat;
+        foreach my $col (@columns) {
+            $row_flat{$col} = $row_obj->$col;
+        }
+        push @rows, \%row_flat;
+    }
+
+    return \@rows;
+}
+
+sub scene_add_hash_validation {
     my $self = shift;
     # TODO: Create validation here
     return { }
 }
 
-sub note_add_finalize {
+sub scene_add_finalize {
     my $self = shift;
     my %form = %{ $self->form };
 
@@ -119,7 +135,7 @@ sub note_add_finalize {
         $form{'document_id'} = $document->document_id;
     }
 
-    $self->_add('Note', \%form);
+    $self->_add('Scene', \%form);
 }
 
 sub _add {
@@ -152,39 +168,37 @@ sub _add {
 ###-----------------------------------------------------------------###
 
 
-sub note_update_skip { shift->form->{'note_id'} ? 0 : 1 }
+sub scene_update_skip { shift->form->{'scene_id'} ? 0 : 1 }
 
-sub note_update_hash_common {
+sub scene_update_hash_common {
     my $self = shift;
 
-    my $ret = $self->_common_note_swap('update');
+    my $ret = $self->_common_scene_swap('update');
     return $ret if $self->ready_validate;
-
-    $ret->{'places'} = [ '', map { $_->name } $self->schema->resultset('Place')->search() ];
 
     my %form = %{ $self->form };
     
-    my $note = $self->schema->resultset('Note')->find({ note_id => $form{'note_id'} }) or die 'Note not found';
+    my $scene = $self->schema->resultset('Scene')->find({ scene_id => $form{'scene_id'} }) or die 'Scene not found';
     
     # TODO DBIx::Class has a way to access this data more easily
-    my $label = $self->schema->resultset('Label')->find({ label_id => $note->label_id });
-    $note->{'color'} = $label->color;
+    my $label = $self->schema->resultset('Label')->find({ label_id => $scene->label_id });
+    $scene->{'color'} = $label->color;
 
     # TODO DBIx::Class has a way to access this data more easily
-    my $document = $self->schema->resultset('Document')->find({ document_id => $note->document_id });
-    $note->{'document_url_address'} = $document->url_address if $document;
+    my $document = $self->schema->resultset('Document')->find({ document_id => $scene->document_id });
+    $scene->{'document_url_address'} = $document->url_address if $document;
 
-    $ret->{'note'} = $note; # TODO don't pass in the entire obj back into the template
+    $ret->{'scene'} = $scene; # TODO don't pass in the entire obj back into the template
     return $ret;
 }
 
-sub note_update_finalize {
+sub scene_update_finalize {
     my $self = shift;
     my %form = %{ $self->form };
 
-    my $pkg    = 'Note';
+    my $pkg    = 'Scene';
     my $schema = $self->schema;
-    my $note   = $schema->resultset($pkg)->find({ note_id => $form{'note_id'} }) or die 'Note not found';
+    my $scene  = $schema->resultset($pkg)->find({ scene_id => $form{'scene_id'} }) or die 'Scene not found';
 
     $form{'document_id'} = undef unless exists $form{'document_id'};
     my $url = delete $form{'document_url_address'};
@@ -195,20 +209,22 @@ sub note_update_finalize {
 
     my %args;
     foreach my $col ($schema->source($pkg)->columns) {
-        next if $col eq 'note_id';
+        next if $col eq 'scene_id';
         my $value = $form{$col};
-        next unless defined $value;
         $args{$col} = $value;
     }
-    my $id = $note->update(\%args)->note_id;
 
-    $self->set_success("Note #$id Updated");
+    $args{'place_id'} = undef if defined $args{'place_id'} && $args{'place_id'} eq '';
+
+    my $id = $scene->update(\%args)->scene_id;
+
+    $self->set_success("Scene #$id Updated");
 
     $self->cgix->location_bounce($self->url);
     return 0;
 }
 
-sub note_update_hash_validation {
+sub scene_update_hash_validation {
     my $self = shift;
     # TODO: Create validation here
     return { }
@@ -218,19 +234,19 @@ sub note_update_hash_validation {
 ###-----------------------------------------------------------------###
 
 
-sub note_delete_hash_swap {
+sub scene_delete_hash_swap {
     my $self  = shift;
     
     my %form = %{$self->form};
 
-    if(my $id = $form{'note_id'}) {
-        $self->schema->resultset('Note')->find({ note_id => $id })->delete;
-        $self->set_success("Note #$id Deleted");
+    if(my $id = $form{'scene_id'}) {
+        $self->schema->resultset('Scene')->find({ scene_id => $id })->delete;
+        $self->set_success("Scene #$id Deleted");
         $self->cgix->location_bounce($self->url);
         return 0;
     }
 
-    $self->_common_swap('Delete Note');
+    $self->_common_swap('Delete Scene');
 }
 
 sub _common_swap {
@@ -244,7 +260,7 @@ sub _common_swap {
 }
 
 
-sub note_delete_hash_validation {
+sub scene_delete_hash_validation {
     my $self = shift;
     # TODO: Create validation here
     return { }
@@ -254,23 +270,23 @@ sub note_delete_hash_validation {
 ###-----------------------------------------------------------------###
 
 
-sub note_order_update_hash_swap { shift->_common_swap('Update Note Order') }
+sub scene_order_update_hash_swap { shift->_common_swap('Update Scene Order') }
 
-sub note_order_update_hash_validation {
+sub scene_order_update_hash_validation {
     my $self = shift;
     # TODO: Create validation here
     return { }
 }
 
-sub note_order_update_finalize {
+sub scene_order_update_finalize {
     my $self = shift;
     my $form = $self->form;
 
-    if(my $note_ids = $form->{'note-id[]'}) {
+    if(my $scene_ids = $form->{'scene-id[]'}) {
         my $weight = 0;
-        my $resultset = $self->schema->resultset('Note');
-        foreach my $note_id (@$note_ids) {
-            $resultset->find({ note_id => $note_id })->update({weight => $weight});
+        my $resultset = $self->schema->resultset('Scene');
+        foreach my $scene_id (@$scene_ids) {
+            $resultset->find({ scene_id => $scene_id })->update({weight => $weight});
             $weight += 1;
         }
     }

@@ -1,0 +1,16 @@
+[%- INCLUDE scribe/wrapper.html %]
+</div>
+</body>
+</html>
+[%- js_validation %]
+[%- IF error %]
+<b>Error! [%- error %]</b>
+[%- ELSIF document_url_address %]
+<iframe class="document" src="[%- document_url_address %]">Iframe broken! It's likely that this browser doe not support them.</iframe>
+[%- ELSE %]
+<form name="[% form_name %]" method="post">
+    <span>Document ID</span>
+    <input name="document_id"></input>
+    <button type="submit">open</button>
+</form>
+[%- END %]
