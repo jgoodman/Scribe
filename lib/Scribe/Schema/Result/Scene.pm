@@ -7,10 +7,11 @@ use base qw/DBIx::Class::Core/;
 
 __PACKAGE__->table('scene');
 __PACKAGE__->add_columns(
-    scene_id   => { data_type => 'serial',  is_nullable => 0, },
-    number     => { data_type => 'integer', is_nullable => 0, },
-    name       => { data_type => 'text',    is_nullable => 1, },
-    chapter_id => { data_type => 'integer', is_nullable => 0, },
+    scene_id    => { data_type => 'serial',  is_nullable => 0, },
+    number      => { data_type => 'integer', is_nullable => 0, },
+    name        => { data_type => 'text',    is_nullable => 1, },
+    chapter_id  => { data_type => 'integer', is_nullable => 0, },
+    document_id => { data_type => 'integer', is_nullable => 1, },
 );
 
 __PACKAGE__->set_primary_key('scene_id');
