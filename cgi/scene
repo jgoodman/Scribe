@@ -1,0 +1,22 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+eval { use cPanelUserConfig };
+
+use base qw(Scribe::App);
+use CGI::Ex::Die register => 1;
+use CGI::Ex::Dump qw(debug);
+
+my $NO_ADD_MSG = 0;
+__PACKAGE__->navigate;
+
+sub name_module { 'scribe/scene_board' }
+
+sub url {
+    my $self = shift;
+    return $self->SUPER::url.'/cgi/scene_board';
+}
+
+# TODO Move crud steps from cgi/scene_board to here
