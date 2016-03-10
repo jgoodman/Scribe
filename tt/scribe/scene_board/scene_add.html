@@ -54,6 +54,30 @@
                     </td>
                 </tr>
                 <tr>
+                    <td>
+                        <span>Characters</span>
+                    </td>
+                    <td>
+                        <table>
+                        [% FOREACH character IN characters %]
+                            <tr>
+                                <td>
+                                    <input
+                                        type="checkbox"
+                                        name="characters[]"
+                                        value="[% character.character_id %]"
+                                    >
+                                    </input>
+                                </td>
+                                <td>
+                                    [% character.name %]
+                                </td>
+                            </tr>
+                        [% END %]
+                        </table>
+                    </td>
+                </tr>
+                <tr>
                     <td><input class="submit" type="submit"></td>
                     </td><td>
                 </tr>

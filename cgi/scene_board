@@ -9,6 +9,7 @@ use base qw(Scribe::App);
 use CGI::Ex::Die register => 1;
 use CGI::Ex::Dump qw(debug);
 
+my $NO_ADD_MSG = 0;
 __PACKAGE__->navigate;
 
 sub name_module { 'scribe/scene_board' }
@@ -83,17 +84,18 @@ sub main_hash_swap {
 ###-----------------------------------------------------------------###
 
 
-sub scene_add_hash_swap { shift->_common_scene_swap('add') }
+sub scene_add_hash_swap { shift->_scene_crud_hash_swap_common('add') }
 
-sub _common_scene_swap {
+sub _scene_crud_hash_swap_common {
     my $self = shift;
     my $crud = shift || die '$crud missing';
     my $url_theme = $self->url_theme;
     return {
-        section  => ucfirst($crud).' Scene',
-        css_crud => "$url_theme/add.css",
-        places   => $self->_flat_search('Place'),
-        labels   => $self->_flat_search('Label', undef, { order_by => { -asc => [qw/name/] } }),
+        section    => ucfirst($crud).' Scene',
+        css_crud   => "$url_theme/add.css",
+        characters => $self->_flat_search('Character', undef, { order_by => { -asc => [qw/name/] } }),
+        places     => $self->_flat_search('Place',     undef, { order_by => { -asc => [qw/name/] } }),
+        labels     => $self->_flat_search('Label',     undef, { order_by => { -asc => [qw/name/] } }),
     }
 }
 
@@ -129,16 +131,49 @@ sub scene_add_finalize {
     my $self = shift;
     my %form = %{ $self->form };
 
+    my $schema = $self->schema;
     my $url = delete $form{'document_url_address'};
     if(defined $url && $url ne '') {
-        my $document = $self->schema->resultset('Document')->find_or_create({ url_address => $url });
+        my $document = $schema->resultset('Document')->find_or_create({ url_address => $url });
         $form{'document_id'} = $document->document_id;
     }
 
-    $self->_add('Scene', \%form);
+    my $scene_id = $self->_add_record('Scene', \%form)->scene_id;
+
+    my $characters = ! defined $form{'characters[]'}      ? [ ]
+                   : ref $form{'characters[]'} ne 'ARRAY' ? [ $form{'characters[]'} ]
+                   : $form{'characters[]'};
+
+    my $link_pkg = 'CharacterScene';
+    my $link_args = { scene_id => $scene_id };
+    $link_args->{'character_id'} = { 'not in' => $characters } if scalar @$characters;
+    foreach my $link_obj ($schema->resultset($link_pkg)->search($link_args)) {
+        $link_obj->delete;
+        $self->set_success('Character #'.$link_obj->character_id.' unlinked to Scene #'.$link_obj->scene_id);
+    }
+    foreach my $character_id (@$characters) {
+        $link_args->{'character_id'} = $character_id;
+        next if $schema->resultset($link_pkg)->find($link_args);
+        my $tmp = $NO_ADD_MSG;
+        $NO_ADD_MSG = 1;
+        my $link_obj = $self->_add_record($link_pkg, $link_args);
+        $NO_ADD_MSG = $tmp;
+        $self->set_success('Character #'.$link_obj->character_id.' linked to Scene #'.$link_obj->scene_id);
+    }
+
+    $self->cgix->location_bounce($self->url);
+    return 0;
 }
 
-sub _add {
+sub _add_finalize_common {
+    my $self = shift;
+    my $pkg  = shift || '$pkg missing';
+    $self->_add_record($pkg, @_);
+    $self->cgix->location_bounce($self->url);
+    return 0;
+}
+
+sub _add_record {
     my $self = shift;
     my $pkg  = shift || die '$pkg missing';
     my $form = shift || { %{ $self->form } };
@@ -147,22 +182,26 @@ sub _add {
     my $schema = $self->schema;
     my $source = $schema->source($pkg);
 
-    my @pc = $source->primary_columns;
-    die 'TODO! Not sure how to handle multiple primary columns' if scalar @pc > 1;
-    my $primary_col = $pc[0];
-
     foreach my $col ($source->columns) {
         my $value = $form->{$col};
         next unless defined $value;
         $args{$col} = $value;
     }
-    my $id = $schema->resultset($pkg)->create(\%args)->$primary_col;
 
-    $self->set_success("$pkg #$id Added");
+    my $row_obj = $schema->resultset($pkg)->create(\%args);
 
-    $self->cgix->location_bounce($self->url);
-    return 0;
+    my @pc = $source->primary_columns;
+    die 'TODO! Not sure how to handle multiple primary columns' if scalar @pc > 1;
+    if(my $primary_col = $pc[0]) {
+        if(my $id = $row_obj->$primary_col) {
+            $self->set_success("$pkg #$id Added") unless $NO_ADD_MSG;
+        }
+        else {
+            die "Failed to create $pkg";
+        }
+    }
 
+    return $row_obj;
 }
 
 ###-----------------------------------------------------------------###
@@ -173,22 +212,29 @@ sub scene_update_skip { shift->form->{'scene_id'} ? 0 : 1 }
 sub scene_update_hash_common {
     my $self = shift;
 
-    my $ret = $self->_common_scene_swap('update');
+    my $ret = $self->_scene_crud_hash_swap_common('update');
     return $ret if $self->ready_validate;
 
     my %form = %{ $self->form };
+   
+    my $pkg = 'Scene';
+    my $schema = $self->schema;
+    my $scene_obj = $schema->resultset($pkg)->find({ scene_id => $form{'scene_id'} }) or die 'Scene not found';
+
+    my $scene;
+    foreach my $col ($schema->source($pkg)->columns) {
+        $scene->{$col} = $scene_obj->$col;
+    }
     
-    my $scene = $self->schema->resultset('Scene')->find({ scene_id => $form{'scene_id'} }) or die 'Scene not found';
-    
-    # TODO DBIx::Class has a way to access this data more easily
-    my $label = $self->schema->resultset('Label')->find({ label_id => $scene->label_id });
-    $scene->{'color'} = $label->color;
+    $scene->{'color'} = $scene_obj->label->color; # TODO do I still need this?
 
     # TODO DBIx::Class has a way to access this data more easily
-    my $document = $self->schema->resultset('Document')->find({ document_id => $scene->document_id });
+    my $document = $schema->resultset('Document')->find({ document_id => $scene_obj->document_id });
     $scene->{'document_url_address'} = $document->url_address if $document;
 
-    $ret->{'scene'} = $scene; # TODO don't pass in the entire obj back into the template
+    $scene->{'characters'} = [ map { $_->character_id } $schema->resultset('CharacterScene')->search({ scene_id => $form{'scene_id'} }) ];
+
+    $ret->{'scene'} = $scene;
     return $ret;
 }
 
@@ -207,18 +253,39 @@ sub scene_update_finalize {
         $form{'document_id'} = $document->document_id if $document;
     }
 
-    my %args;
+    my %update_args;
     foreach my $col ($schema->source($pkg)->columns) {
         next if $col eq 'scene_id';
         my $value = $form{$col};
-        $args{$col} = $value;
+        $update_args{$col} = $value;
     }
 
-    $args{'place_id'} = undef if defined $args{'place_id'} && $args{'place_id'} eq '';
+    $update_args{'place_id'} = undef if defined $update_args{'place_id'} && $update_args{'place_id'} eq '';
 
-    my $id = $scene->update(\%args)->scene_id;
+    my $scene_id = $scene->update(\%update_args)->scene_id;
 
-    $self->set_success("Scene #$id Updated");
+    $self->set_success("Scene #$scene_id Updated");
+
+    my $characters = ! defined $form{'characters[]'}      ? [ ]
+                   : ref $form{'characters[]'} ne 'ARRAY' ? [ $form{'characters[]'} ]
+                   : $form{'characters[]'};
+
+    my $link_pkg = 'CharacterScene';
+    my $link_args = { scene_id => $scene_id };
+    $link_args->{'character_id'} = { 'not in' => $characters } if scalar @$characters;
+    foreach my $link_obj ($schema->resultset($link_pkg)->search($link_args)) {
+        $link_obj->delete;
+        $self->set_success('Character #'.$link_obj->character_id.' unlinked to Scene #'.$link_obj->scene_id);
+    }
+    foreach my $character_id (@$characters) {
+        $link_args->{'character_id'} = $character_id;
+        next if $schema->resultset($link_pkg)->find($link_args);
+        my $tmp = $NO_ADD_MSG;
+        $NO_ADD_MSG = 1;
+        my $link_obj = $self->_add_record($link_pkg, $link_args);
+        $NO_ADD_MSG = $tmp;
+        $self->set_success('Character #'.$link_obj->character_id.' linked to Scene #'.$link_obj->scene_id);
+    }
 
     $self->cgix->location_bounce($self->url);
     return 0;
@@ -240,6 +307,7 @@ sub scene_delete_hash_swap {
     my %form = %{$self->form};
 
     if(my $id = $form{'scene_id'}) {
+        $self->schema->resultset('CharacterScene')->search({ scene_id => $id })->delete;
         $self->schema->resultset('Scene')->find({ scene_id => $id })->delete;
         $self->set_success("Scene #$id Deleted");
         $self->cgix->location_bounce($self->url);
@@ -323,7 +391,12 @@ sub document_hash_validation {
 ###-----------------------------------------------------------------###
 
 
-sub place_add_hash_swap { shift->_common_swap('Add Place') }
+sub place_add_hash_swap {
+    my $self = shift;
+    my $hash = $self->_common_swap('Add Place');
+    $hash->{'places'} = $self->_flat_search('Place', undef, { order_by => { -asc => [qw/name/] } });
+    return $hash;
+}
 
 sub place_add_hash_validation {
     my $self = shift;
@@ -331,7 +404,26 @@ sub place_add_hash_validation {
     return { }
 }
 
-sub place_add_finalize { shift->_add('Place') }
+sub place_add_finalize {
+    my $self = shift;
+    
+
+    return $self->_add_finalize_common('Place');
+}
+
+
+###-----------------------------------------------------------------###
+
+
+sub character_add_hash_swap { shift->_common_swap('Add Character') }
+
+sub character_add_hash_validation {
+    my $self = shift;
+    # TODO: Create validation here
+    return { }
+}
+
+sub character_add_finalize { shift->_add_finalize_common('Character') }
 
 
 ###-----------------------------------------------------------------###
@@ -375,5 +467,5 @@ sub label_add_hash_validation {
     return { }
 }
 
-sub label_add_finalize { shift->_add('Label') }
+sub label_add_finalize { shift->_add_finalize_common('Label') }
 

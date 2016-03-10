@@ -71,6 +71,34 @@
                     </td>
                 </tr>
                 <tr>
+                    <td>
+                        <span>Characters</span>
+                    </td>
+                    <td>
+                        <table>
+                        [% FOREACH character IN characters %]
+                        [% character_id = character.character_id %]
+                            <tr>
+                                <td>
+                                    <input
+                                        type="checkbox"
+                                        name="characters[]"
+                                        value="[% character.character_id %]"
+                                        [%- IF scene.characters.grep(character_id).size %]
+                                        checked
+                                        [%- END %]
+                                    >
+                                    </input>
+                                </td>
+                                <td>
+                                    [% character.name %]
+                                </td>
+                            </tr>
+                        [% END %]
+                        </table>
+                    </td>
+                </tr>
+                <tr>
                     <td><input class="submit" type="submit" value="Update"></td>
                     </td><td>
                 </tr>

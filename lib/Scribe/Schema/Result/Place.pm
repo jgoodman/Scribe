@@ -7,8 +7,9 @@ use base qw/DBIx::Class::Core/;
 
 __PACKAGE__->table('place');
 __PACKAGE__->add_columns(
-    place_id => { data_type => 'serial', is_nullable => 0, },
-    name     => { data_type => 'text',   is_nullable => 1, },
+    place_id        => { data_type => 'serial',  is_nullable => 0, },
+    name            => { data_type => 'text',    is_nullable => 1, },
+    parent_place_id => { data_type => 'integer', is_nullable => 1, },
 );
 
 __PACKAGE__->set_primary_key('place_id');
