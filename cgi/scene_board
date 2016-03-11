@@ -9,7 +9,7 @@ use base qw(Scribe::App);
 use CGI::Ex::Die register => 1;
 use CGI::Ex::Dump qw(debug);
 
-my $NO_ADD_MSG = 0;
+our $NO_ADD_MSG;
 __PACKAGE__->navigate;
 
 sub name_module { 'scribe/scene_board' }
@@ -17,31 +17,6 @@ sub name_module { 'scribe/scene_board' }
 sub url {
     my $self = shift;
     return $self->SUPER::url.'/cgi/scene_board';
-}
-
-
-###-----------------------------------------------------------------###
-
-
-sub msg_queue_file { '.msg_queue' }
-
-sub set_success {
-    my $self = shift;
-    my $msg  = shift;
-    open(my $fh, '>>', $self->msg_queue_file) or return;
-    print $fh "$msg\n";
-    close $fh;
-}
-
-sub get_success {
-    my $self = shift;
-    my $file = $self->msg_queue_file;
-    return unless -e $file;
-    open(my $fh, '<', $file) or return;
-    my @rows = <$fh>;
-    close $fh;
-    unlink $file;
-    return join("<br />", @rows);
 }
 
 
@@ -84,261 +59,7 @@ sub main_hash_swap {
 ###-----------------------------------------------------------------###
 
 
-sub scene_add_hash_swap { shift->_scene_crud_hash_swap_common('add') }
-
-sub _scene_crud_hash_swap_common {
-    my $self = shift;
-    my $crud = shift || die '$crud missing';
-    my $url_theme = $self->url_theme;
-    return {
-        section    => ucfirst($crud).' Scene',
-        css_crud   => "$url_theme/add.css",
-        characters => $self->_flat_search('Character', undef, { order_by => { -asc => [qw/name/] } }),
-        places     => $self->_flat_search('Place',     undef, { order_by => { -asc => [qw/name/] } }),
-        labels     => $self->_flat_search('Label',     undef, { order_by => { -asc => [qw/name/] } }),
-    }
-}
-
-# query db with DBIx but convert and return
-# results as an array of hashes instead of objects
-sub _flat_search {
-    my $self = shift;
-    my $pkg  = shift || die '$pkg missing';
-
-    my $schema  = $self->schema;
-    my @columns = $schema->source($pkg)->columns;
-
-    my @rows;
-    my $results_obj = $schema->resultset($pkg)->search(@_);
-    while (my $row_obj = $results_obj->next) {
-        my %row_flat;
-        foreach my $col (@columns) {
-            $row_flat{$col} = $row_obj->$col;
-        }
-        push @rows, \%row_flat;
-    }
-
-    return \@rows;
-}
-
-sub scene_add_hash_validation {
-    my $self = shift;
-    # TODO: Create validation here
-    return { }
-}
-
-sub scene_add_finalize {
-    my $self = shift;
-    my %form = %{ $self->form };
-
-    my $schema = $self->schema;
-    my $url = delete $form{'document_url_address'};
-    if(defined $url && $url ne '') {
-        my $document = $schema->resultset('Document')->find_or_create({ url_address => $url });
-        $form{'document_id'} = $document->document_id;
-    }
-
-    my $scene_id = $self->_add_record('Scene', \%form)->scene_id;
-
-    my $characters = ! defined $form{'characters[]'}      ? [ ]
-                   : ref $form{'characters[]'} ne 'ARRAY' ? [ $form{'characters[]'} ]
-                   : $form{'characters[]'};
-
-    my $link_pkg = 'CharacterScene';
-    my $link_args = { scene_id => $scene_id };
-    $link_args->{'character_id'} = { 'not in' => $characters } if scalar @$characters;
-    foreach my $link_obj ($schema->resultset($link_pkg)->search($link_args)) {
-        $link_obj->delete;
-        $self->set_success('Character #'.$link_obj->character_id.' unlinked to Scene #'.$link_obj->scene_id);
-    }
-    foreach my $character_id (@$characters) {
-        $link_args->{'character_id'} = $character_id;
-        next if $schema->resultset($link_pkg)->find($link_args);
-        my $tmp = $NO_ADD_MSG;
-        $NO_ADD_MSG = 1;
-        my $link_obj = $self->_add_record($link_pkg, $link_args);
-        $NO_ADD_MSG = $tmp;
-        $self->set_success('Character #'.$link_obj->character_id.' linked to Scene #'.$link_obj->scene_id);
-    }
-
-    $self->cgix->location_bounce($self->url);
-    return 0;
-}
-
-sub _add_finalize_common {
-    my $self = shift;
-    my $pkg  = shift || '$pkg missing';
-    $self->_add_record($pkg, @_);
-    $self->cgix->location_bounce($self->url);
-    return 0;
-}
-
-sub _add_record {
-    my $self = shift;
-    my $pkg  = shift || die '$pkg missing';
-    my $form = shift || { %{ $self->form } };
-
-    my %args;
-    my $schema = $self->schema;
-    my $source = $schema->source($pkg);
-
-    foreach my $col ($source->columns) {
-        my $value = $form->{$col};
-        next unless defined $value;
-        $args{$col} = $value;
-    }
-
-    my $row_obj = $schema->resultset($pkg)->create(\%args);
-
-    my @pc = $source->primary_columns;
-    die 'TODO! Not sure how to handle multiple primary columns' if scalar @pc > 1;
-    if(my $primary_col = $pc[0]) {
-        if(my $id = $row_obj->$primary_col) {
-            $self->set_success("$pkg #$id Added") unless $NO_ADD_MSG;
-        }
-        else {
-            die "Failed to create $pkg";
-        }
-    }
-
-    return $row_obj;
-}
-
-###-----------------------------------------------------------------###
-
-
-sub scene_update_skip { shift->form->{'scene_id'} ? 0 : 1 }
-
-sub scene_update_hash_common {
-    my $self = shift;
-
-    my $ret = $self->_scene_crud_hash_swap_common('update');
-    return $ret if $self->ready_validate;
-
-    my %form = %{ $self->form };
-   
-    my $pkg = 'Scene';
-    my $schema = $self->schema;
-    my $scene_obj = $schema->resultset($pkg)->find({ scene_id => $form{'scene_id'} }) or die 'Scene not found';
-
-    my $scene;
-    foreach my $col ($schema->source($pkg)->columns) {
-        $scene->{$col} = $scene_obj->$col;
-    }
-    
-    $scene->{'color'} = $scene_obj->label->color; # TODO do I still need this?
-
-    # TODO DBIx::Class has a way to access this data more easily
-    my $document = $schema->resultset('Document')->find({ document_id => $scene_obj->document_id });
-    $scene->{'document_url_address'} = $document->url_address if $document;
-
-    $scene->{'characters'} = [ map { $_->character_id } $schema->resultset('CharacterScene')->search({ scene_id => $form{'scene_id'} }) ];
-
-    $ret->{'scene'} = $scene;
-    return $ret;
-}
-
-sub scene_update_finalize {
-    my $self = shift;
-    my %form = %{ $self->form };
-
-    my $pkg    = 'Scene';
-    my $schema = $self->schema;
-    my $scene  = $schema->resultset($pkg)->find({ scene_id => $form{'scene_id'} }) or die 'Scene not found';
-
-    $form{'document_id'} = undef unless exists $form{'document_id'};
-    my $url = delete $form{'document_url_address'};
-    if(defined $url && $url ne '') {
-        my $document = $schema->resultset('Document')->find_or_create({ url_address => $url });
-        $form{'document_id'} = $document->document_id if $document;
-    }
-
-    my %update_args;
-    foreach my $col ($schema->source($pkg)->columns) {
-        next if $col eq 'scene_id';
-        my $value = $form{$col};
-        $update_args{$col} = $value;
-    }
-
-    $update_args{'place_id'} = undef if defined $update_args{'place_id'} && $update_args{'place_id'} eq '';
-
-    my $scene_id = $scene->update(\%update_args)->scene_id;
-
-    $self->set_success("Scene #$scene_id Updated");
-
-    my $characters = ! defined $form{'characters[]'}      ? [ ]
-                   : ref $form{'characters[]'} ne 'ARRAY' ? [ $form{'characters[]'} ]
-                   : $form{'characters[]'};
-
-    my $link_pkg = 'CharacterScene';
-    my $link_args = { scene_id => $scene_id };
-    $link_args->{'character_id'} = { 'not in' => $characters } if scalar @$characters;
-    foreach my $link_obj ($schema->resultset($link_pkg)->search($link_args)) {
-        $link_obj->delete;
-        $self->set_success('Character #'.$link_obj->character_id.' unlinked to Scene #'.$link_obj->scene_id);
-    }
-    foreach my $character_id (@$characters) {
-        $link_args->{'character_id'} = $character_id;
-        next if $schema->resultset($link_pkg)->find($link_args);
-        my $tmp = $NO_ADD_MSG;
-        $NO_ADD_MSG = 1;
-        my $link_obj = $self->_add_record($link_pkg, $link_args);
-        $NO_ADD_MSG = $tmp;
-        $self->set_success('Character #'.$link_obj->character_id.' linked to Scene #'.$link_obj->scene_id);
-    }
-
-    $self->cgix->location_bounce($self->url);
-    return 0;
-}
-
-sub scene_update_hash_validation {
-    my $self = shift;
-    # TODO: Create validation here
-    return { }
-}
-
-
-###-----------------------------------------------------------------###
-
-
-sub scene_delete_hash_swap {
-    my $self  = shift;
-    
-    my %form = %{$self->form};
-
-    if(my $id = $form{'scene_id'}) {
-        $self->schema->resultset('CharacterScene')->search({ scene_id => $id })->delete;
-        $self->schema->resultset('Scene')->find({ scene_id => $id })->delete;
-        $self->set_success("Scene #$id Deleted");
-        $self->cgix->location_bounce($self->url);
-        return 0;
-    }
-
-    $self->_common_swap('Delete Scene');
-}
-
-sub _common_swap {
-    my $self = shift;
-    my $headline = shift || die '$headline missing';
-    my $url_theme = $self->url_theme;
-    return {
-        section  => $headline,
-        css_crud => "$url_theme/common.css",
-    }
-}
-
-
-sub scene_delete_hash_validation {
-    my $self = shift;
-    # TODO: Create validation here
-    return { }
-}
-
-
-###-----------------------------------------------------------------###
-
-
-sub scene_order_update_hash_swap { shift->_common_swap('Update Scene Order') }
+sub scene_order_update_hash_swap { shift->_hash_swap_common('Update Scene Order') }
 
 sub scene_order_update_hash_validation {
     my $self = shift;
@@ -366,12 +87,13 @@ sub scene_order_update_finalize {
 ###-----------------------------------------------------------------###
 
 
+# TODO move this out to cgi/document (or use ScribeDB)
 sub document_hash_swap {
     my $self = shift;
     my %form = %{$self->form};
 
     my $url_theme = $self->url_theme;
-    my $hash = $self->_common_swap('Document');
+    my $hash = $self->_hash_swap_common('Document');
 
     if(my $id = $form{'document_id'}) {
         my $document = $self->schema->resultset('Document')->find({ document_id => $id });
@@ -391,10 +113,11 @@ sub document_hash_validation {
 ###-----------------------------------------------------------------###
 
 
+# TODO move this out to cgi/place (or use ScribeDB)
 sub place_add_hash_swap {
     my $self = shift;
-    my $hash = $self->_common_swap('Add Place');
-    $hash->{'places'} = $self->_flat_search('Place', undef, { order_by => { -asc => [qw/name/] } });
+    my $hash = $self->_hash_swap_common('Add Place');
+    $hash->{'places'} = $self->flat_search('Place', undef, { order_by => { -asc => [qw/name/] } });
     return $hash;
 }
 
@@ -404,18 +127,14 @@ sub place_add_hash_validation {
     return { }
 }
 
-sub place_add_finalize {
-    my $self = shift;
-    
-
-    return $self->_add_finalize_common('Place');
-}
+sub place_add_finalize { shift->add_finalize_common('Place') }
 
 
 ###-----------------------------------------------------------------###
 
 
-sub character_add_hash_swap { shift->_common_swap('Add Character') }
+# TODO move this out to cgi/character (or use ScribeDB)
+sub character_add_hash_swap { shift->_hash_swap_common('Add Character') }
 
 sub character_add_hash_validation {
     my $self = shift;
@@ -423,12 +142,14 @@ sub character_add_hash_validation {
     return { }
 }
 
-sub character_add_finalize { shift->_add_finalize_common('Character') }
+sub character_add_finalize { shift->add_finalize_common('Character') }
 
 
 ###-----------------------------------------------------------------###
 
-sub access_user_update_hash_swap { shift->_common_swap('Update AccessUser') }
+
+# TODO move this out to cgi/access_user (or use ScribeDB)
+sub access_user_update_hash_swap { shift->_hash_swap_common('Update AccessUser') }
 
 sub access_user_update_hash_validation {
     my $self = shift;
@@ -453,13 +174,24 @@ sub access_user_update_finalize {
 ###-----------------------------------------------------------------###
 
 
-sub more_tools_hash_swap { shift->_common_swap('More Tools') }
+sub more_tools_hash_swap { shift->_hash_swap_common('More Tools') }
+
+sub _hash_swap_common {
+    my $self = shift;
+    my $headline = shift || die '$headline missing';
+    my $url_theme = $self->url_theme;
+    return {
+        section  => $headline,
+        css_crud => "$url_theme/common.css",
+    }
+}
 
 
 ###-----------------------------------------------------------------###
 
 
-sub label_add_hash_swap { shift->_common_swap('Add Label') }
+# TODO move this out to cgi/label (or use ScribeDB)
+sub label_add_hash_swap { shift->_hash_swap_common('Add Label') }
 
 sub label_add_hash_validation {
     my $self = shift;
@@ -467,5 +199,5 @@ sub label_add_hash_validation {
     return { }
 }
 
-sub label_add_finalize { shift->_add_finalize_common('Label') }
+sub label_add_finalize { shift->add_finalize_common('Label') }
 

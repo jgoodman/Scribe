@@ -42,7 +42,7 @@ sub add_hash_swap {
     my $self  = shift;
     my $table = $self->table;
 
-    my $schema = $self->can('schema') ? $self->schema : schmea();
+    my $schema = $self->schema;
     my $pkg    = $self->table2pkg($table);
     my @cols;
     foreach my $col ($schema->source($pkg)->columns) {
@@ -86,7 +86,6 @@ sub add_finalize {
 
     # TODO figure out and code below on what gets returned here
     $self->add_to_form($hash);
-    my $c = $self->config;
     $self->cgix->location_bounce($self->url_list);
     return 0;
 }
@@ -100,13 +99,19 @@ sub delete_hash_swap {
 
     my $schema = $self->can('schema') ? $self->schema : schmea();
     my $pkg    = $self->table2pkg($table);
-    my @cols   = $schema->source($pkg)->columns;
+    my $source = $schema->source($pkg);
+    my @cols   = $source->columns;
+
+    my @pc = $source->primary_columns;
+    die 'TODO! Not sure how to handle multiple primary columns' if scalar @pc > 1;
+    my $primary_col = $pc[0] || die 'primary column not found';
 
     my $url_theme = $self->url_theme;
     return {
-        css_crud => "$url_theme/delete.css",
-        section  => $self->table2pkg($table, ' ').' - Delete',
-        columns  => \@cols,
+        css_crud    => "$url_theme/delete.css",
+        section     => $self->table2pkg($table, ' ').' - Delete',
+        columns     => \@cols,
+        primary_col => $primary_col,
     }
 }
 
@@ -130,7 +135,6 @@ sub delete_finalize {
 
     # TODO figure out and code below on what gets returned here
     $self->add_to_form($hash);
-    my $c = $self->config;
     $self->cgix->location_bounce($self->url_list);
     return 0;
 }
@@ -179,10 +183,12 @@ sub list_hash_swap {
 sub update_hash_swap {
     my $self  = shift;
     my $table = $self->table;
+    my $pkg = $self->table2pkg($table);
     my $url_theme = $self->url_theme;
     return {
         css_crud => "$url_theme/list.css",
         section  => $self->table2pkg($table, ' ').' - Update',
+        columns  => [ $self->schema->source($pkg)->columns ],
     }
 }
 
@@ -195,11 +201,29 @@ sub update_hash_validation {
 sub update_finalize {
     my $self = shift;
     my $table = $self->table;
-    my $id = $table.'_id';
-    my $form = $self->form;
-    die 'TODO: step not yet implemented'; # TODO
+    my %form = %{ $self->form };
+
     my $pkg = $self->table2pkg($table);
-    $self->schema->resultset($pkg)->find({ $id => $form->{$id} })->update;
+
+    my $schema = $self->schema;
+    my $source = $schema->source($pkg);
+
+    my @columns = $source->columns;
+    my @primary_columns = $source->primary_columns;
+
+    my %find_args;
+    my %update_args;
+    foreach my $col (@columns) {
+        my $value = $form{$col};
+        if(grep { $col eq $_ } @primary_columns) {
+            $find_args{$col} = $value;
+            next;
+        }
+        $update_args{$col} = $value;
+    }
+
+    $self->schema->resultset($pkg)->find(\%find_args)->update(\%update_args);
+
     my $hash = {
         success => 1, #TODO place holder for now.
         error   => '', #errors go here
@@ -207,7 +231,6 @@ sub update_finalize {
 
     # TODO figure out and code below on what gets returned here
     $self->add_to_form($hash);
-    my $c = $self->config;
     $self->cgix->location_bounce($self->url_list);
     return 0;
 }

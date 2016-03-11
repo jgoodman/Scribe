@@ -9,14 +9,226 @@ use base qw(Scribe::App);
 use CGI::Ex::Die register => 1;
 use CGI::Ex::Dump qw(debug);
 
-my $NO_ADD_MSG = 0;
+our $NO_ADD_MSG;
 __PACKAGE__->navigate;
 
-sub name_module { 'scribe/scene_board' }
+sub name_module { 'scribe/scene' }
 
-sub url {
+sub url { shift->SUPER::url.'/cgi/scene' }
+
+sub main_hash_swap {
     my $self = shift;
-    return $self->SUPER::url.'/cgi/scene_board';
+    $self->cgix->location_bounce($self->board_url);
+    return 0;
 }
 
-# TODO Move crud steps from cgi/scene_board to here
+
+###-----------------------------------------------------------------###
+
+
+sub add_hash_validation {
+    my $self = shift;
+    # TODO: Create validation here
+    return { }
+}
+
+sub add_hash_swap {
+    my $self = shift;
+    my $crud = shift || 'add';
+
+    my $default_weight = 0;
+    my $sibling_scenes = $self->flat_search('Scene', undef, { order_by => { -desc => [qw/weight/] } });
+    $default_weight = $sibling_scenes->[0]->{'weight'} + 1 if $sibling_scenes && $sibling_scenes->[0];
+
+    my $url_theme = $self->url_theme;
+    return {
+        section        => ucfirst($crud).' Scene',
+        css_crud       => "$url_theme/$crud.css",
+        characters     => $self->flat_search('Character', undef, { order_by => { -asc => [qw/name/] } }),
+        places         => $self->flat_search('Place',     undef, { order_by => { -asc => [qw/name/] } }),
+        labels         => $self->flat_search('Label',     undef, { order_by => { -asc => [qw/name/] } }),
+        default_weight => $default_weight,
+    }
+}
+
+sub add_finalize {
+    my $self = shift;
+    my %form = %{ $self->form };
+
+    my $schema = $self->schema;
+    my $url = delete $form{'document_url_address'};
+    if(defined $url && $url ne '') {
+        my $document = $schema->resultset('Document')->find_or_create({ url_address => $url });
+        $form{'document_id'} = $document->document_id;
+    }
+
+    $form{'place_id'} = undef if defined $form{'place_id'} && $form{'place_id'} eq '';
+
+    my $scene_id = $self->add_record('Scene', \%form)->scene_id;
+
+    my $characters = ! defined $form{'characters[]'}      ? [ ]
+                   : ref $form{'characters[]'} ne 'ARRAY' ? [ $form{'characters[]'} ]
+                   : $form{'characters[]'};
+
+    my $link_pkg = 'CharacterScene';
+    my $link_args = { scene_id => $scene_id };
+    $link_args->{'character_id'} = { 'not in' => $characters } if scalar @$characters;
+    foreach my $link_obj ($schema->resultset($link_pkg)->search($link_args)) {
+        $link_obj->delete;
+        $self->set_success('Character #'.$link_obj->character_id.' unlinked to Scene #'.$link_obj->scene_id);
+    }
+    foreach my $character_id (@$characters) {
+        $link_args->{'character_id'} = $character_id;
+        next if $schema->resultset($link_pkg)->find($link_args);
+        local $NO_ADD_MSG = 1;
+        my $link_obj = $self->add_record($link_pkg, $link_args);
+        $self->set_success('Character #'.$link_obj->character_id.' linked to Scene #'.$link_obj->scene_id);
+    }
+
+    $self->cgix->location_bounce($self->board_url);
+    return 0;
+}
+
+
+###-----------------------------------------------------------------###
+
+
+sub edit_skip { shift->form->{'scene_id'} ? 0 : 1 }
+
+sub edit_hash_common {
+    my $self = shift;
+
+    my $ret = $self->add_hash_swap('edit');
+    return $ret if $self->ready_validate;
+
+    my %form = %{ $self->form };
+    my $scene_id = $form{'scene_id'};
+
+    my $pkg = 'Scene';
+    my $schema = $self->schema;
+    my $scene_obj = $schema->resultset($pkg)->find({ scene_id => $scene_id }) or die 'Scene not found';
+
+    my $scene;
+    foreach my $col ($schema->source($pkg)->columns) {
+        $scene->{$col} = $scene_obj->$col;
+    }
+
+    # TODO DBIx::Class has a way to access this data more easily
+    my $document = $schema->resultset('Document')->find({ document_id => $scene_obj->document_id });
+    $scene->{'document_url_address'} = $document->url_address if $document;
+
+    $scene->{'characters'} = [ map { $_->character_id } $schema->resultset('CharacterScene')->search({ scene_id => $scene_id }) ];
+
+    my @task_cols = $schema->source('Task')->columns;
+    $scene->{'tasks'} = [ map {
+        my $task_obj = $_;
+        my %task;
+        foreach my $col (@task_cols) { $task{$col} = $task_obj->$col }
+        my $character_obj = $task_obj->character;
+        $task{'character_name'} = $character_obj->name if $character_obj;
+        \%task;
+    } $scene_obj->tasks ];
+
+    $ret->{'scene'} = $scene;
+    return $ret;
+}
+
+sub edit_hash_validation {
+    my $self = shift;
+    my $hash = $self->add_hash_validation;
+    # TODO: validate scene_id
+    return $hash;
+}
+
+
+sub edit_finalize {
+    my $self = shift;
+    my %form = %{ $self->form };
+
+    my $pkg    = 'Scene';
+    my $schema = $self->schema;
+    my $scene  = $schema->resultset($pkg)->find({ scene_id => $form{'scene_id'} }) or die 'Scene not found';
+
+    $form{'document_id'} = undef unless exists $form{'document_id'};
+    my $url = delete $form{'document_url_address'};
+    if(defined $url && $url ne '') {
+        my $document = $schema->resultset('Document')->find_or_create({ url_address => $url });
+        $form{'document_id'} = $document->document_id if $document;
+    }
+
+    $form{'place_id'} = undef if defined $form{'place_id'} && $form{'place_id'} eq '';
+
+    my %update_args;
+    foreach my $col ($schema->source($pkg)->columns) {
+        next if $col eq 'scene_id';
+        my $value = $form{$col};
+        $update_args{$col} = $value;
+    }
+
+    $update_args{'place_id'} = undef if defined $update_args{'place_id'} && $update_args{'place_id'} eq '';
+
+    my $scene_id = $scene->update(\%update_args)->scene_id;
+
+    $self->set_success("Scene #$scene_id Updated");
+
+    my $characters = ! defined $form{'characters[]'}      ? [ ]
+                   : ref $form{'characters[]'} ne 'ARRAY' ? [ $form{'characters[]'} ]
+                   : $form{'characters[]'};
+
+    my $link_pkg = 'CharacterScene';
+    my $link_args = { scene_id => $scene_id };
+    $link_args->{'character_id'} = { 'not in' => $characters } if scalar @$characters;
+    foreach my $link_obj ($schema->resultset($link_pkg)->search($link_args)) {
+        $link_obj->delete;
+        $self->set_success('Character #'.$link_obj->character_id.' unlinked to Scene #'.$link_obj->scene_id);
+    }
+    foreach my $character_id (@$characters) {
+        $link_args->{'character_id'} = $character_id;
+        next if $schema->resultset($link_pkg)->find($link_args);
+        my $tmp = $NO_ADD_MSG;
+        $NO_ADD_MSG = 1;
+        my $link_obj = $self->add_record($link_pkg, $link_args);
+        $NO_ADD_MSG = $tmp;
+        $self->set_success('Character #'.$link_obj->character_id.' linked to Scene #'.$link_obj->scene_id);
+    }
+
+    $self->cgix->location_bounce($self->board_url);
+    return 0;
+}
+
+
+###-----------------------------------------------------------------###
+
+
+sub view_hash_common { shift->edit_hash_common(@_) }
+
+
+###-----------------------------------------------------------------###
+
+
+sub delete_hash_swap {
+    my $self  = shift;
+
+    my %form = %{$self->form};
+
+    if(my $scene_id = $form{'scene_id'}) {
+        $self->schema->resultset('CharacterScene')->search({ scene_id => $scene_id })->delete;
+        $self->schema->resultset('Scene')->find({ scene_id => $scene_id })->delete;
+        $self->set_success("Scene #$scene_id Deleted");
+        $self->cgix->location_bounce($self->board_url);
+        return 0;
+    }
+
+    my $url_theme = $self->url_theme;
+    return {
+        section  => 'Delete Scene',
+        css_crud => "$url_theme/common.css",
+    }
+}
+
+sub delete_hash_validation {
+    my $self = shift;
+    # TODO: Create validation here
+    return { }
+}
+

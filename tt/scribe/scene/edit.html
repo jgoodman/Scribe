@@ -1,8 +1,8 @@
 [%- INCLUDE scribe/wrapper.html %]
     <div id="content">
+        <span class="id-header">Scene Id: [% scene.scene_id %]</span>
         <div class="form">
         <form name="[% form_name %]" method="post">
-        <span>[% scene.scene_id %]<span>
             <input name="scene_id" style="display: none;" value="[%- scene.scene_id %]"></input>
             <input name="submit_update" style="display: none;" value="[%- scene.scene_id %]"></input>
             <table>
@@ -25,7 +25,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2"><textarea class="text" rows="4" cols="32" name="summary">[%- scene.summary %]</textarea></td>
+                    <td colspan="2"><textarea class="text" rows="5" cols="41" name="summary">[%- scene.summary %]</textarea></td>
                 </tr>
             </table>
             <table>
@@ -50,7 +50,7 @@
                         <span>Place</span>
                     </td>
                     <td>
-                        <select name="place_id">
+                        <select class="color" name="place_id">
                             <option
                                 [%- IF ! scene.place_id %]
                                 selected="selected"
@@ -105,5 +105,16 @@
             </table>
         </form>
         </div>
+        [% IF scene.tasks.size %]
+        <div class="list-child-items">
+            <span class="list-child-items">Tasks</span>
+            <a href="[%- url_cgi %]/task/add?scene_id=[% scene.scene_id%]"><i class="fi-plus"></i></a>
+            <ul class="list-child-items">
+                [% FOREACH task IN scene.tasks %]
+                <li class="list-child-items">[% task.character_name  %] [% task.summary  %]</li>
+                [% END %]
+            </ul>
+        </div>
+        [% END %]
     </div>        
-[%- INCLUDE scribe/footer.html %]
+[% INCLUDE scribe/footer.html %]

@@ -6,9 +6,9 @@
                 <tr>
                     <td>
                         <input
-                            class="name" type="text" name="name" value="Name"
-                            onblur="if (this.value == '') {this.value = 'Name';}"
-                            onfocus="if (this.value == 'Name') {this.value = '';}"
+                            class="name" type="text" name="name" value="Title"
+                            onblur="if (this.value == '') {this.value = 'Title';}"
+                            onfocus="if (this.value == 'Title') {this.value = '';}"
                             onclick="this.style.color='black';"
                         >
                     </td>
@@ -21,7 +21,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2"><textarea class="text" rows="4" cols="32" name="summary"></textarea></td>
+                    <td colspan="2"><textarea class="text" rows="5" cols="41" name="summary"></textarea></td>
                 </tr>
             </table>
             <table>
@@ -30,7 +30,13 @@
                         <span>Weight</span>
                     </td>
                     <td>
-                        <input class="name" type="number" name="weight" value="0" onclick="this.style.color='black';"> 
+                        <input
+                            class="name"
+                            type="number"
+                            name="weight"
+                            value="[% default_weight %]"
+                            onclick="this.style.color='black';"
+                        > 
                     </td>
                 </tr>
                 <tr>
@@ -46,7 +52,8 @@
                         <span>Place</span>
                     </td>
                     <td>
-                        <select name="place_id">
+                        <select class='color' name="place_id">
+                            <option value=""></option>
                             [% FOREACH place IN places %]
                             <option value="[% place.place_id %]">[% place.name %]</option>
                             [% END %]

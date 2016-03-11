@@ -12,10 +12,10 @@ __PACKAGE__->add_columns(
 );
 
 __PACKAGE__->set_primary_key('character_id');
-__PACKAGE__->has_many('goals',  'Scribe::Schema::Result::CharacterGoal',   'character_id');
-__PACKAGE__->has_many('notes',  'Scribe::Schema::Result::CharacterNote',   'character_id');
-__PACKAGE__->has_many('scenes', 'Scribe::Schema::Result::CharacterScenes', 'character_id');
-__PACKAGE__->has_many('meta',   'Scribe::Schema::Result::CharacterMeta',   'character_id');
+__PACKAGE__->has_many('goals',  'Scribe::Schema::Result::CharacterGoal',  'character_id');
+__PACKAGE__->has_many('notes',  'Scribe::Schema::Result::CharacterNote',  'character_id');
+__PACKAGE__->has_many('scenes', 'Scribe::Schema::Result::CharacterScene', 'character_id');
+__PACKAGE__->has_many('meta',   'Scribe::Schema::Result::CharacterMeta',  'character_id');
 
 1;
 

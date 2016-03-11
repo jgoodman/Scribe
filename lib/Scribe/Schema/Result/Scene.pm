@@ -24,7 +24,8 @@ __PACKAGE__->belongs_to(document => 'Scribe::Schema::Result::Document', 'documen
 __PACKAGE__->belongs_to(chapter  => 'Scribe::Schema::Result::Chapter',  'chapter_id',  { join_type => 'left' });
 __PACKAGE__->belongs_to(place    => 'Scribe::Schema::Result::Place',    'place_id',    { join_type => 'left' });
 
-__PACKAGE__->has_many('characters', 'Scribe::Schema::Result::CharacterNote', 'note_id');
+__PACKAGE__->has_many('characters', 'Scribe::Schema::Result::CharacterScene', 'scene_id');
+__PACKAGE__->has_many('tasks',      'Scribe::Schema::Result::Task',           'scene_id', { order_by => { -asc => [qw/weight task_id/]} });
 
 1;
 

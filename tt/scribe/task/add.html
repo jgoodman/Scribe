@@ -1,0 +1,80 @@
+[%- INCLUDE scribe/wrapper.html %]
+    <div id="content">
+        <div class="form">
+        <form name="[% form_name %]" method="post">
+            <table>
+                <tr>
+                    <td colspan="2">
+                        <select class="color" name="label_id">
+                            <option value=""></option>
+                            [% FOREACH label IN labels %]
+                            <option [% IF label.color %] class="option-color-[% label.color %]" [% END %] value="[% label.label_id %]">[% label.name %]</option>
+                            [% END %]
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span>Character</span>
+                    </td>
+                    <td>
+                        <select class="base" name="character_id">
+                            <option value=""></option>
+                            [% FOREACH character IN characters %]
+                            <option value="[% character.character_id %]">[% character.name %]</option>
+                            [% END %]
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2"><textarea class="text" rows="5" cols="41" name="summary"></textarea></td>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <td>
+                        <span>Scene</span>
+                    </td>
+                    <td>
+                        <select class="base" name="scene_id">
+                            <option 
+                                value=""
+                                [%- IF ! scene_id %]
+                                selected="selected"
+                                [%- END %]
+                            >
+                            </option>
+                            [% FOREACH scene IN scenes %]
+                            <option
+                                value="[% scene.scene_id %]"
+                                [%- IF scene_id AND scene_id == scene.scene_id %]
+                                selected="selected"
+                                [% END %]
+                            >[% scene.name %]</option>
+                            [% END %]
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span>Weight</span>
+                    </td>
+                    <td>
+                        <input
+                            class="name"
+                            type="number"
+                            name="weight"
+                            value="[% default_weight %]"
+                            onclick="this.style.color='black';"
+                        > 
+                    </td>
+                </tr>
+                <tr>
+                    <td><input class="submit" type="submit"></td>
+                    </td><td>
+                </tr>
+            </table>
+        </form>
+        </div>
+    </div>        
+[%- INCLUDE scribe/footer.html %]
