@@ -111,7 +111,16 @@
             <a href="[%- url_cgi %]/task/add?scene_id=[% scene.scene_id%]"><i class="fi-plus"></i></a>
             <ul class="list-child-items">
                 [% FOREACH task IN scene.tasks %]
-                <li class="list-child-items">[% task.character_name  %] [% task.summary  %]</li>
+                <li class="list-child-items">
+                    <a
+                        href="[%- url_cgi %]/task/edit?task_id=[% task.task_id%]"
+                    ><i class="fi-pencil"></i></a>
+                    <a
+                        href="[%- url_cgi %]/task/delete?task_id=[% task.task_id%]"
+                        onclick="return confirm('This is a permanent deletion and cannot be undone. Are you sure you want to continue?')"
+                    ><i class="fi-x"></i></a>
+                    [% task.character_name  %] [% task.summary  %]
+                </li>
                 [% END %]
             </ul>
         </div>
