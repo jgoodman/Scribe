@@ -1,10 +1,9 @@
 [%- INCLUDE scribe/wrapper.html %]
     <div id="content">
         <span class="id-header">Scene Id: [% scene.scene_id %]</span>
-        <div class="form">
+        <div class="form with-outline">
         <form name="[% form_name %]" method="post">
             <input name="scene_id" style="display: none;" value="[%- scene.scene_id %]"></input>
-            <input name="submit_update" style="display: none;" value="[%- scene.scene_id %]"></input>
             <table>
                 <tr>
                     <td>
@@ -105,25 +104,32 @@
             </table>
         </form>
         </div>
-        [% IF scene.tasks.size %]
-        <div class="list-child-items">
+        <div class="list-child-items with-outline" style="min-width:40em;max-width:50em;">
             <span class="list-child-items">Tasks</span>
-            <a href="[%- url_cgi %]/task/add?scene_id=[% scene.scene_id%]"><i class="fi-plus"></i></a>
-            <ul class="list-child-items">
+            <table class="list-child-items">
                 [% FOREACH task IN scene.tasks %]
-                <li class="list-child-items">
-                    <a
-                        href="[%- url_cgi %]/task/edit?task_id=[% task.task_id%]"
-                    ><i class="fi-pencil"></i></a>
-                    <a
-                        href="[%- url_cgi %]/task/delete?task_id=[% task.task_id%]"
-                        onclick="return confirm('This is a permanent deletion and cannot be undone. Are you sure you want to continue?')"
-                    ><i class="fi-x"></i></a>
-                    [% task.character_name  %] [% task.summary  %]
-                </li>
+                <tr class="list-child-items">
+                    <td>
+                        <a
+                            href="[%- url_cgi %]/task/edit?task_id=[% task.task_id%]"
+                        ><i class="fi-pencil"></i></a>
+                        <a
+                            href="[%- url_cgi %]/task/delete?task_id=[% task.task_id%]"
+                            onclick="return confirm('This is a permanent deletion and cannot be undone. Are you sure you want to continue?')"
+                        ><i class="fi-x"></i></a>
+                    </td>
+                    <td>
+                        <div class="cell-status scene-header-[%- task.label_color %]">
+                            [% task.label_name %]
+                        </div>
+                    </td>
+                    <td>
+                        [% task.character_name  %] [% task.summary  %]
+                    </td>
+                </tr>
                 [% END %]
-            </ul>
+            </table>
+            <a href="[%- url_cgi %]/task/add?scene_id=[% scene.scene_id%]">(Add a task)</a>
         </div>
-        [% END %]
     </div>        
 [% INCLUDE scribe/footer.html %]

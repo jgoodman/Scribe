@@ -1,14 +1,24 @@
 [%- INCLUDE scribe/wrapper.html %]
     <div id="content">
+        <span class="id-header">Task Id: [% task.task_id %]</span>
         <div class="form with-outline">
         <form name="[% form_name %]" method="post">
+            <input name="task_id" style="display: none;" value="[%- task.task_id %]"></input>
             <table>
                 <tr>
                     <td colspan="2">
                         <select class="color" name="label_id">
-                            <option value=""></option>
+                            <option
+                                [%- IF ! task.label_id %]
+                                selected="selected"
+                                [%- END %]
+                            ></option>
                             [% FOREACH label IN labels %]
-                            <option [% IF label.color %] class="option-color-[% label.color %]" [% END %] value="[% label.label_id %]">[% label.name %]</option>
+                            <option
+                                [% IF label.color %]class="option-color-[% label.color %]"[% END %]
+                                [% IF task.label_id == label.label_id %] selected="selected" [% END %]
+                                value="[% label.label_id %]"
+                            >[% label.name %]</option>
                             [% END %]
                         </select>
                     </td>
@@ -19,15 +29,22 @@
                     </td>
                     <td>
                         <select class="base" name="character_id">
-                            <option value=""></option>
+                            <option
+                                [%- IF ! task.character_id %]
+                                selected="selected"
+                                [%- END %]
+                            ></option>
                             [% FOREACH character IN characters %]
-                            <option value="[% character.character_id %]">[% character.name %]</option>
+                            <option
+                                [% IF task.character_id == character.character_id %] selected="selected" [% END %]
+                                value="[% character.character_id %]"
+                            >[% character.name %]</option>
                             [% END %]
                         </select>
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2"><textarea class="text" rows="5" cols="41" name="summary"></textarea></td>
+                    <td colspan="2"><textarea class="text" rows="5" cols="41" name="summary">[% task.summary %]</textarea></td>
                 </tr>
             </table>
             <table>
@@ -39,7 +56,7 @@
                         <select class="base" name="scene_id">
                             <option 
                                 value=""
-                                [%- IF ! scene_id %]
+                                [%- IF ! task.scene_id %]
                                 selected="selected"
                                 [%- END %]
                             >
@@ -47,7 +64,7 @@
                             [% FOREACH scene IN scenes %]
                             <option
                                 value="[% scene.scene_id %]"
-                                [%- IF scene_id AND scene_id == scene.scene_id %]
+                                [%- IF task.scene_id AND task.scene_id == scene.scene_id %]
                                 selected="selected"
                                 [% END %]
                             >[% scene.name %]</option>
@@ -64,13 +81,12 @@
                             class="name"
                             type="number"
                             name="weight"
-                            value="[% default_weight %]"
-                            onclick="this.style.color='black';"
+                            value="[% task.weight %]"
                         > 
                     </td>
                 </tr>
                 <tr>
-                    <td><input class="submit" type="submit"></td>
+                    <td><input class="submit" type="submit" value="Update"></td>
                     </td><td>
                 </tr>
             </table>

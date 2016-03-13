@@ -35,9 +35,10 @@ sub add_hash_validation {
 sub add_hash_swap {
     my $self = shift;
     my $crud = shift || 'add';
+    my $form = shift || $self->form;
 
     my $default_weight = 0;
-    if(my $scene_id = $self->form->{'scene_id'}) {
+    if(my $scene_id = $form->{'scene_id'}) {
         my $sibling_tasks = $self->flat_search('Task', { scene_id => $scene_id }, { order_by => { -desc => [qw/weight/] } });
         $default_weight = $sibling_tasks->[0]->{'weight'} + 1 if $sibling_tasks && $sibling_tasks->[0];
     }
@@ -61,13 +62,81 @@ sub add_finalize {
         delete $form{$col} if defined $form{$col} && $form{$col} eq '';
     }
 
-    $self->add_record('Task', \%form);
+    my $task_obj = $self->add_record('Task', \%form);
+
+    $self->cgix->location_bounce($self->_bounce_url($task_obj));
+    return 0;
+}
+
+sub _bounce_url {
+    my $self = shift;
+    my $task_obj = shift;
 
     my $bounce_url = $self->board_url;
-    if(my $scene_id = $form{'scene_id'}) {
-        $bounce_url = $self->url_cgi."/scene?scene_id=$scene_id";
+    if(my $scene_id = $task_obj->scene_id) {
+        $bounce_url = $self->url_cgi."/scene/edit?scene_id=$scene_id";
     }
-    $self->cgix->location_bounce($bounce_url);
+
+    return $bounce_url;
+}
+
+
+###-----------------------------------------------------------------###
+
+
+sub edit_skip { shift->form->{'task_id'} ? 0 : 1 }
+
+sub edit_hash_common {
+    my $self = shift;
+    my %form = %{ $self->form };
+
+    my $ret = $self->add_hash_swap('edit', \%form);
+    return $ret if $self->ready_validate;
+
+    if(my $task_id = $form{'task_id'}) {
+        my $pkg = 'Task';
+        my $schema = $self->schema;
+        my $task_obj = $schema->resultset($pkg)->find({ task_id => $task_id }) or die "$pkg not found";
+
+        my $task = $ret->{'task'} = { };
+        foreach my $col ($schema->source($pkg)->columns) {
+            $task->{$col} = $task_obj->$col;
+        }
+    }
+
+    return $ret;
+}
+
+sub edit_hash_validation {
+    my $self = shift;
+    my $hash = $self->add_hash_validation;
+    # TODO: validate task_id
+    return $hash;
+}
+
+sub edit_finalize {
+    my $self = shift;
+    my %form = %{ $self->form };
+
+    my $pkg      = 'Task';
+    my $schema   = $self->schema;
+    my $task_obj = $schema->resultset($pkg)->find({ task_id => $form{'task_id'} }) or die "$pkg not found";
+
+    foreach my $col (qw(label_id scene_id character_id)) {
+        $form{$col} = undef if defined $form{$col} && $form{$col} eq '';
+    }
+
+    my %update_args;
+    foreach my $col ($schema->source($pkg)->columns) {
+        next if $col eq 'task_id';
+        $update_args{$col} = $form{$col};
+    }
+
+    $task_obj = $task_obj->update(\%update_args);
+    my $task_id = $task_obj->task_id;
+    $self->set_success("$pkg #$task_id Updated");
+
+    $self->cgix->location_bounce($self->_bounce_url($task_obj));
     return 0;
 }
 
@@ -75,4 +144,29 @@ sub add_finalize {
 ###-----------------------------------------------------------------###
 
 
+sub delete_hash_swap {
+    my $self  = shift;
 
+    my %form = %{$self->form};
+
+    my $pkg = 'Task';
+    if(my $task_id = $form{'task_id'}) {
+        my $task_obj = $self->schema->resultset($pkg)->find({ task_id => $task_id });
+        $task_obj->delete;
+        $self->set_success("$pkg #$task_id Deleted");
+        $self->cgix->location_bounce($self->_bounce_url($task_obj));
+        return 0;
+    }
+
+    my $url_theme = $self->url_theme;
+    return {
+        section  => "Delete $pkg",
+        css_crud => "$url_theme/common.css",
+    }
+}
+
+sub delete_hash_validation {
+    my $self = shift;
+    # TODO: Create validation here
+    return { }
+}

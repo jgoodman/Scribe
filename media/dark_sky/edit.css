@@ -9,11 +9,14 @@ span.id-header {
     color:#D8D8D8;
 }
 
+div.with-outline {
+    border-radius: 5px;
+    border: 1px solid #373737;
+}
+
 div.form {
     padding: .75em .5em .75em .5em;
     margin:  .25em .5em .50em .5em;
-    border-radius: 5px;
-    border: 1px solid #373737;
     width: 24.75em;
 }
 
@@ -81,17 +84,28 @@ td.add {
 }
 
 div.list-child-items {
-    padding: .5em;
-    margin: .5em;
+    padding: .5em .5em .5em .5em;
+    margin:  .5em .5em .5em .5em;
+}
+
+table.list-child-items {
+    padding: .25em .5em .25em .5em;
+    margin:  .25em .5em .25em .5em;
 }
 
 span.list-child-items {
     font-size:15pt;
 }
 
-ul.list-child-items {
-    font-size:14pt;
+tr.list-child-items {
+    font-size:13pt;
     list-style-type: none;
-    padding: .125em 1.25em .125em 1.25em;
-    margin:  .125em 1.25em .125em 1.25em;
+    padding: .125em .75em .25em .75em;
+    margin:  .125em .75em .25em .75em;
+}
+
+div.cell-status {
+    padding: .125em;
+    margin:  .125em;
+    text-align: center;
 }

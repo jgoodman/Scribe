@@ -123,9 +123,19 @@ sub edit_hash_common {
     $scene->{'tasks'} = [ map {
         my $task_obj = $_;
         my %task;
-        foreach my $col (@task_cols) { $task{$col} = $task_obj->$col }
+        foreach my $col (@task_cols) {
+            $task{$col} = $task_obj->$col
+        }
+
+        my $label_obj = $task_obj->label;
+        if($label_obj) {
+            $task{'label_name'}  = $label_obj->name;
+            $task{'label_color'} = $label_obj->color;
+        }
+
         my $character_obj = $task_obj->character;
         $task{'character_name'} = $character_obj->name if $character_obj;
+
         \%task;
     } $scene_obj->tasks ];
 
@@ -164,8 +174,6 @@ sub edit_finalize {
         my $value = $form{$col};
         $update_args{$col} = $value;
     }
-
-    $update_args{'place_id'} = undef if defined $update_args{'place_id'} && $update_args{'place_id'} eq '';
 
     my $scene_id = $scene->update(\%update_args)->scene_id;
 
