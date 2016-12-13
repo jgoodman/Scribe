@@ -50,6 +50,44 @@ sub url_cgi { shift->url_base.'/cgi' }
 sub board_url { shift->url_cgi.'/scene_board' }
 
 ###---------------------------------------------------------------###
+# login/authentication
+
+sub auth_args {
+    my $self = shift;
+    # FIXME Not sure why below isn't working
+    # I've played around with various template_include_path values
+    # Still get a "wrapper.html not found"
+#    my $hash = {
+#        template_include_path => $self->template_path.'/scribe',
+#        login_header => 'wrapper.html',
+#        login_footer => 'footer.html',
+#    };
+
+    my $login_header;
+    open my $fh, '<:encoding(UTF-8)', $self->template_path.'/scribe/wrapper.html';
+    {
+        local $/;
+        $login_header = <$fh>;
+    }
+    close $fh;
+    $login_header .= '<div style="margin:.5em;padding:.5em;">';
+
+    my $login_footer;
+    open my $fh, '<:encoding(UTF-8)', $self->template_path.'/scribe/footer.html';
+    {
+        local $/;
+        $login_footer = <$fh>;
+    }
+    close $fh;
+    $login_footer .= '</div>'.$login_footer;
+    my $hash = {
+        login_header => \$login_header,
+        login_footer => \$login_footer,
+    };
+    return $hash;
+}
+
+###---------------------------------------------------------------###
 # universal functions
 
 our $SCHEMA;
@@ -74,7 +112,7 @@ sub get_pass_by_user {
 sub hash_base {
     my $self = shift;
     my $path = $self->template_path . '/scribe';
-    return {
+    my $hash = {
         header_path => "$path/header.html",
         footer_path => "$path/footer.html",
         app_title   => 'Scribe',
@@ -84,6 +122,10 @@ sub hash_base {
         url_cgi     => $self->url_cgi,
         url_base    => $self->url_base,
     };
+
+    
+    $hash->{'section'} = 'Login Required!' unless $self->is_authed;
+    return $hash;
 }
 
 sub table2pkg {

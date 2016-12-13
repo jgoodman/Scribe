@@ -34,10 +34,20 @@ sub main_hash_swap {
     );
     my @rows;
     while (my $scene = $scenes->next) {
+        my $summary = $scene->summary;
+        if($scene->summ_tasks) {
+            $summary = join ' ', map {
+                my $task_obj = $_;
+                my $char = $task_obj->character;
+                my $char_name = $char ? $char->name : '';
+                ($char_name ? "$char_name " : '').$task_obj->summary
+            } $scene->tasks;
+        }
+
         my $hash = {
             scene_id      => $scene->scene_id,
             name          => $scene->name,
-            summary       => $scene->summary,
+            summary       => $summary,
             color         => $scene->label->color,
             document_id   => '',
             document_name => '',

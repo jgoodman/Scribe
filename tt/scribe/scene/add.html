@@ -27,6 +27,20 @@
             <table>
                 <tr>
                     <td>
+                        <span>Summarize Tasks</span>
+                    </td>
+                    <td>
+                        <input
+                            type="checkbox"
+                            name="summ_tasks"
+                            [%- IF scene.summ_tasks %]
+                            checked
+                            [%- END %]
+                        >
+                    </td>
+                </tr>
+                <tr>
+                    <td>
                         <span>Weight</span>
                     </td>
                     <td>

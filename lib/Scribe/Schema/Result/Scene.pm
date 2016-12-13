@@ -10,6 +10,7 @@ __PACKAGE__->add_columns(
     scene_id    => { data_type => 'serial',  is_nullable => 0, },
     name        => { data_type => 'text',    is_nullable => 1, },
     summary     => { data_type => 'text',    is_nullable => 1, },
+    summ_tasks  => { data_type => 'text',    is_nullable => 1, },
     weight      => { data_type => 'integer', is_nullable => 1, },
     label_id    => { data_type => 'integer', is_nullable => 1, },
     document_id => { data_type => 'integer', is_nullable => 1, },

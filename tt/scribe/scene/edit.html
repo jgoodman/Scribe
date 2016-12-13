@@ -30,6 +30,20 @@
             <table>
                 <tr>
                     <td>
+                        <span>Summarize Tasks</span>
+                    </td>
+                    <td>
+                        <input
+                            type="checkbox"
+                            name="summ_tasks"
+                            [%- IF scene.summ_tasks %]
+                            checked
+                            [%- END%]
+                        > 
+                    </td>
+                </tr>
+                <tr>
+                    <td>
                         <span>Weight</span>
                     </td>
                     <td>
@@ -46,7 +60,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <span>Place</span>
+                        <span>Location</span>
                     </td>
                     <td>
                         <select class="color" name="place_id">
