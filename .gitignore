@@ -20,3 +20,5 @@ nytprof.out
 /_eumm/
 *.swp
 lib/Scribe/_Config.pm
+local/
+cpanfile.snapshot

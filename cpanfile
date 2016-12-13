@@ -1,0 +1,13 @@
+requires 'CGI::Ex';
+requires 'CGI::Ex::App';
+requires 'CGI::Ex::Die';
+requires 'CGI::Ex::Dump';
+requires 'DBIx::Class';
+requires 'DBIx::Class::Core';
+requires 'DBIx::Class::Schema';
+requires 'DBIx::Class::DeploymentHandler';
+requires 'Getopt::Long';
+requires 'Pod::Usage';
+requires 'File::Slurp';
+requires 'Net::Server::HTTP';
+requires 'Test::Class';
