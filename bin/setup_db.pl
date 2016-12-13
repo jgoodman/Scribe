@@ -9,23 +9,38 @@ use lib "$Bin/../lib";
 use Getopt::Long;
 use Pod::Usage;
 
+use DBIx::Class::DeploymentHandler;
+
 use Scribe::Schema;
 use Scribe::_Config;
 
 my $man;
 my $help;
 my $bare_install;
+my $force_overwrite = 0;
+
 GetOptions(
     'help|?'       => \$help,
     man            => \$man,
-    'bare-install' => \$bare_install;
+    'bare-install' => \$bare_install,
+    'force_overwrite!' => \$force_overwrite
 ) or pod2usage(2);
 pod2usage(1) if $help;
 pod2usage(-exitval => 0, -verbose => 2) if $man;
 
 my $c = 'Scribe::_Config';
 my $schema = Scribe::Schema->connect('dbi:Pg:database='.$c->dbname.';host='.$c->dbhost.';port=5432', $c->dbuser, $c->dbpass);
-$schema->deploy( { add_drop_table => 1 } );
+
+my $dh = DBIx::Class::DeploymentHandler->new({
+     schema              => $schema,
+     script_directory    => "$FindBin::Bin/../dbicdh",
+     databases           => 'PostgreSQL',
+     sql_translator_args => { add_drop_table => 0 },
+     force_overwrite     => $force_overwrite,
+});
+
+$dh->prepare_install;
+$dh->install;
 
 # setup admin user
 my $user = $schema->resultset('AccessUser')->new({ name => 'admin', email => 'admin' });
