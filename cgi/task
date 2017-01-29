@@ -3,7 +3,9 @@
 use strict;
 use warnings;
 
-eval { use cPanelUserConfig };
+BEGIN {
+    eval 'use cPanelUserConfig';
+}
 
 use base qw(Scribe::App);
 use CGI::Ex::Die register => 1;
