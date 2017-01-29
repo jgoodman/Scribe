@@ -73,7 +73,7 @@ sub auth_args {
     $login_header .= '<div style="margin:.5em;padding:.5em;">';
 
     my $login_footer;
-    open my $fh, '<:encoding(UTF-8)', $self->template_path.'/scribe/footer.html';
+    open $fh, '<:encoding(UTF-8)', $self->template_path.'/scribe/footer.html';
     {
         local $/;
         $login_footer = <$fh>;
