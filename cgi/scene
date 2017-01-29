@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 BEGIN {
-    eval "use cPanelUserConfig";
+    eval 'use cPanelUserConfig';
 }
 
 use base qw(Scribe::App);
