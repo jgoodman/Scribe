@@ -47,7 +47,13 @@ sub url_theme {
 sub url_js { shift->url_base.'/js' }
 sub url_cgi { shift->url_base.'/cgi' }
 
-sub board_url { shift->url_cgi.'/scene_board' }
+sub url_cgi_board {
+    my $self = shift;
+    my $project_id = $self->project_id;
+    return $self->url_cgi.'/scene_board'.($project_id ? "/$project_id" : '');
+}
+
+sub url_cgi_project { shift->url_cgi.'/project' }
 
 ###---------------------------------------------------------------###
 # login/authentication
@@ -123,7 +129,6 @@ sub hash_base {
         url_base    => $self->url_base,
     };
 
-    
     $hash->{'section'} = 'Login Required!' unless $self->is_authed;
     return $hash;
 }
@@ -187,6 +192,17 @@ sub add_record {
     }
 
     return $row_obj;
+}
+
+sub project_id {
+    my $self = shift;
+
+    if(my $project_id = $self->form->{'project_id'}) {
+        return $project_id;
+    }
+
+    $self->stash->{'project_id'} = shift if scalar @_;
+    return $self->stash->{'project_id'};
 }
 
 ###---------------------------------------------------------------###

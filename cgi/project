@@ -1,0 +1,74 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+BEGIN {
+    eval 'use cPanelUserConfig';
+}
+
+use base qw(Scribe::App);
+use CGI::Ex::Die register => 1;
+use CGI::Ex::Dump qw(debug);
+
+our $NO_ADD_MSG;
+__PACKAGE__->navigate;
+
+sub name_module { 'scribe/project' }
+
+sub url { shift->SUPER::url.'/cgi/project' }
+
+sub main_hash_swap {
+    my $self = shift;
+
+    return {
+        section  => 'Select Project',
+        projects => $self->flat_search('Project', undef, { order_by => { -asc => [qw/name/] } }),
+    }
+}
+
+
+###-----------------------------------------------------------------###
+
+
+sub add_hash_validation {
+    my $self = shift;
+    # TODO: Create validation here
+    return { }
+}
+
+sub add_hash_swap {
+    my $self = shift;
+    my $crud = shift || 'add';
+    my $form = shift || $self->form;
+
+    my $url_theme = $self->url_theme;
+    return {
+        section        => ucfirst($crud).' Project',
+        css_crud       => "$url_theme/$crud.css",
+    }
+}
+
+sub add_finalize {
+    my $self = shift;
+    my %form = %{ $self->form };
+
+    foreach my $col (qw(number group_id)) {
+        delete $form{$col} if defined $form{$col} && $form{$col} eq '';
+    }
+
+    # create project
+    my $project_obj = $self->add_record('Project', \%form);
+    my $project_id = $self->project_id($project_obj->project_id);
+
+    # init starting chapter
+    $self->add_record('Chapter', {
+        number     => 1,
+        project_id => $project_id,
+    });
+
+    $self->cgix->location_bounce($self->url_cgi_board);
+    return 0;
+}
+
+

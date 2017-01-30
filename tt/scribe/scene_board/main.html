@@ -26,12 +26,12 @@
     [%- INCLUDE scribe/header.html %]
     <div id="content">
         <div style="padding: 0em .5em 0em .5em;">
-    	    <a href="[%- url_cgi %]/scene/add">add scene</a>
+    	    <a href="[%- url_cgi %]/scene/add?chapter_id=[% chapter_id %]">add scene</a>
     	    <span class="seperator">|</span>
-    	    <a href="[%- url %]/more_tools">more tools</a>
+    	    <a href="[%- url %]/[% project_id %]/more_tools">more tools</a>
     	</div>
-        <div>
         [% IF success%]
+        <div>
             <div id="contain-success">
                 <span>[% success %]</span>
             </div>

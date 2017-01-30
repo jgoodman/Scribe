@@ -11,7 +11,7 @@ __PACKAGE__->add_columns(
     name           => { data_type => 'text',    is_nullable => 0, },
     password       => { data_type => 'text',    is_nullable => 0, },
     email          => { data_type => 'text',    is_nullable => 1, },
-#    xp             => { data_type => 'integer', is_nullable => 1, },
+    xp             => { data_type => 'integer', is_nullable => 1, },
 );
 
 __PACKAGE__->set_primary_key('access_user_id');

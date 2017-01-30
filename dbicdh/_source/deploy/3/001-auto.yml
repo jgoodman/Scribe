@@ -1,0 +1,1654 @@
+---
+schema:
+  procedures: {}
+  tables:
+    access_user:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - access_user_id
+          match_type: ''
+          name: ''
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - name
+          match_type: ''
+          name: access_user_unique_key_name
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: UNIQUE
+      fields:
+        access_user_id:
+          data_type: serial
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: access_user_id
+          order: 1
+          size:
+            - 0
+        email:
+          data_type: text
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: email
+          order: 4
+          size:
+            - 0
+        name:
+          data_type: text
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 1
+          name: name
+          order: 2
+          size:
+            - 0
+        password:
+          data_type: text
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 0
+          name: password
+          order: 3
+          size:
+            - 0
+        xp:
+          data_type: integer
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: xp
+          order: 5
+          size:
+            - 0
+      indices: []
+      name: access_user
+      options: []
+      order: 1
+    chapter:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - chapter_id
+          match_type: ''
+          name: ''
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - project_id
+          match_type: ''
+          name: chapter_fk_project_id
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields:
+            - project_id
+          reference_table: project
+          type: FOREIGN KEY
+      fields:
+        chapter_id:
+          data_type: serial
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: chapter_id
+          order: 1
+          size:
+            - 0
+        name:
+          data_type: text
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: name
+          order: 3
+          size:
+            - 0
+        number:
+          data_type: integer
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 0
+          name: number
+          order: 2
+          size:
+            - 0
+        project_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 0
+          name: project_id
+          order: 4
+          size:
+            - 0
+      indices:
+        - fields:
+            - project_id
+          name: chapter_idx_project_id
+          options: []
+          type: NORMAL
+      name: chapter
+      options: []
+      order: 11
+    character:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - character_id
+          match_type: ''
+          name: ''
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+      fields:
+        character_id:
+          data_type: serial
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: character_id
+          order: 1
+          size:
+            - 0
+        name:
+          data_type: text
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: name
+          order: 2
+          size:
+            - 0
+      indices: []
+      name: character
+      options: []
+      order: 2
+    character_goal:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - character_id
+            - goal_id
+          match_type: ''
+          name: character_goal_character_id_goal_id
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: UNIQUE
+        - deferrable: 1
+          expression: ''
+          fields:
+            - character_id
+          match_type: ''
+          name: character_goal_fk_character_id
+          on_delete: CASCADE
+          on_update: CASCADE
+          options: []
+          reference_fields:
+            - character_id
+          reference_table: character
+          type: FOREIGN KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - goal_id
+          match_type: ''
+          name: character_goal_fk_goal_id
+          on_delete: CASCADE
+          on_update: CASCADE
+          options: []
+          reference_fields:
+            - goal_id
+          reference_table: goal
+          type: FOREIGN KEY
+      fields:
+        character_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 1
+          name: character_id
+          order: 1
+          size:
+            - 0
+        goal_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 1
+          name: goal_id
+          order: 2
+          size:
+            - 0
+      indices:
+        - fields:
+            - character_id
+          name: character_goal_idx_character_id
+          options: []
+          type: NORMAL
+        - fields:
+            - goal_id
+          name: character_goal_idx_goal_id
+          options: []
+          type: NORMAL
+      name: character_goal
+      options: []
+      order: 12
+    character_meta:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - meta_id
+          match_type: ''
+          name: ''
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - character_id
+          match_type: ''
+          name: character_meta_fk_character_id
+          on_delete: CASCADE
+          on_update: CASCADE
+          options: []
+          reference_fields:
+            - character_id
+          reference_table: character
+          type: FOREIGN KEY
+      fields:
+        character_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 0
+          name: character_id
+          order: 2
+          size:
+            - 0
+        key:
+          data_type: text
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: key
+          order: 3
+          size:
+            - 0
+        meta_id:
+          data_type: serial
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: meta_id
+          order: 1
+          size:
+            - 0
+        value:
+          data_type: text
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: value
+          order: 4
+          size:
+            - 0
+      indices:
+        - fields:
+            - character_id
+          name: character_meta_idx_character_id
+          options: []
+          type: NORMAL
+      name: character_meta
+      options: []
+      order: 8
+    character_note:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - character_id
+            - note_id
+          match_type: ''
+          name: character_note_character_id_note_id
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: UNIQUE
+        - deferrable: 1
+          expression: ''
+          fields:
+            - character_id
+          match_type: ''
+          name: character_note_fk_character_id
+          on_delete: CASCADE
+          on_update: CASCADE
+          options: []
+          reference_fields:
+            - character_id
+          reference_table: character
+          type: FOREIGN KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - note_id
+          match_type: ''
+          name: character_note_fk_note_id
+          on_delete: CASCADE
+          on_update: CASCADE
+          options: []
+          reference_fields:
+            - note_id
+          reference_table: note
+          type: FOREIGN KEY
+      fields:
+        character_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 1
+          name: character_id
+          order: 1
+          size:
+            - 0
+        note_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 1
+          name: note_id
+          order: 2
+          size:
+            - 0
+      indices:
+        - fields:
+            - character_id
+          name: character_note_idx_character_id
+          options: []
+          type: NORMAL
+        - fields:
+            - note_id
+          name: character_note_idx_note_id
+          options: []
+          type: NORMAL
+      name: character_note
+      options: []
+      order: 15
+    character_project:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - character_project_id
+          match_type: ''
+          name: ''
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - character_id
+            - project_id
+          match_type: ''
+          name: character_project_character_id_project_id
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: UNIQUE
+        - deferrable: 1
+          expression: ''
+          fields:
+            - character_id
+          match_type: ''
+          name: character_project_fk_character_id
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields:
+            - character_id
+          reference_table: character
+          type: FOREIGN KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - project_id
+          match_type: ''
+          name: character_project_fk_project_id
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields:
+            - project_id
+          reference_table: project
+          type: FOREIGN KEY
+      fields:
+        character_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 1
+          name: character_id
+          order: 2
+          size:
+            - 0
+        character_project_id:
+          data_type: serial
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: character_project_id
+          order: 1
+          size:
+            - 0
+        project_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 1
+          name: project_id
+          order: 3
+          size:
+            - 0
+      indices:
+        - fields:
+            - character_id
+          name: character_project_idx_character_id
+          options: []
+          type: NORMAL
+        - fields:
+            - project_id
+          name: character_project_idx_project_id
+          options: []
+          type: NORMAL
+      name: character_project
+      options: []
+      order: 14
+    character_scene:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - character_scene_id
+          match_type: ''
+          name: ''
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - character_id
+            - scene_id
+          match_type: ''
+          name: character_scene_character_id_scene_id
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: UNIQUE
+        - deferrable: 1
+          expression: ''
+          fields:
+            - character_id
+          match_type: ''
+          name: character_scene_fk_character_id
+          on_delete: CASCADE
+          on_update: CASCADE
+          options: []
+          reference_fields:
+            - character_id
+          reference_table: character
+          type: FOREIGN KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - scene_id
+          match_type: ''
+          name: character_scene_fk_scene_id
+          on_delete: CASCADE
+          on_update: CASCADE
+          options: []
+          reference_fields:
+            - scene_id
+          reference_table: scene
+          type: FOREIGN KEY
+      fields:
+        character_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 1
+          name: character_id
+          order: 2
+          size:
+            - 0
+        character_scene_id:
+          data_type: serial
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: character_scene_id
+          order: 1
+          size:
+            - 0
+        scene_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 1
+          name: scene_id
+          order: 3
+          size:
+            - 0
+      indices:
+        - fields:
+            - character_id
+          name: character_scene_idx_character_id
+          options: []
+          type: NORMAL
+        - fields:
+            - scene_id
+          name: character_scene_idx_scene_id
+          options: []
+          type: NORMAL
+      name: character_scene
+      options: []
+      order: 19
+    document:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - document_id
+          match_type: ''
+          name: ''
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - url_address
+          match_type: ''
+          name: document__unique_key__url_address
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: UNIQUE
+      fields:
+        document_id:
+          data_type: serial
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: document_id
+          order: 1
+          size:
+            - 0
+        name:
+          data_type: text
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: name
+          order: 2
+          size:
+            - 0
+        url_address:
+          data_type: text
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 1
+          name: url_address
+          order: 3
+          size:
+            - 0
+      indices: []
+      name: document
+      options: []
+      order: 3
+    goal:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - goal_id
+          match_type: ''
+          name: ''
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+      fields:
+        goal_id:
+          data_type: serial
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: goal_id
+          order: 1
+          size:
+            - 0
+        name:
+          data_type: text
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 0
+          name: name
+          order: 2
+          size:
+            - 0
+      indices: []
+      name: goal
+      options: []
+      order: 4
+    goal_note:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - goal_id
+            - note_id
+          match_type: ''
+          name: goal_note_goal_id_note_id
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: UNIQUE
+        - deferrable: 1
+          expression: ''
+          fields:
+            - goal_id
+          match_type: ''
+          name: goal_note_fk_goal_id
+          on_delete: CASCADE
+          on_update: CASCADE
+          options: []
+          reference_fields:
+            - goal_id
+          reference_table: goal
+          type: FOREIGN KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - note_id
+          match_type: ''
+          name: goal_note_fk_note_id
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields:
+            - note_id
+          reference_table: note
+          type: FOREIGN KEY
+      fields:
+        goal_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 1
+          name: goal_id
+          order: 1
+          size:
+            - 0
+        note_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 1
+          name: note_id
+          order: 2
+          size:
+            - 0
+      indices:
+        - fields:
+            - goal_id
+          name: goal_note_idx_goal_id
+          options: []
+          type: NORMAL
+        - fields:
+            - note_id
+          name: goal_note_idx_note_id
+          options: []
+          type: NORMAL
+      name: goal_note
+      options: []
+      order: 16
+    label:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - label_id
+          match_type: ''
+          name: ''
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - name
+          match_type: ''
+          name: label__unique_key__name
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: UNIQUE
+      fields:
+        color:
+          data_type: text
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 0
+          name: color
+          order: 3
+          size:
+            - 0
+        label_id:
+          data_type: serial
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: label_id
+          order: 1
+          size:
+            - 0
+        name:
+          data_type: text
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 1
+          name: name
+          order: 2
+          size:
+            - 0
+      indices: []
+      name: label
+      options: []
+      order: 5
+    note:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - note_id
+          match_type: ''
+          name: ''
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - document_id
+          match_type: ''
+          name: note_fk_document_id
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields:
+            - document_id
+          reference_table: document
+          type: FOREIGN KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - label_id
+          match_type: ''
+          name: note_fk_label_id
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields:
+            - label_id
+          reference_table: label
+          type: FOREIGN KEY
+      fields:
+        document_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: document_id
+          order: 6
+          size:
+            - 0
+        label_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: label_id
+          order: 4
+          size:
+            - 0
+        name:
+          data_type: text
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: name
+          order: 2
+          size:
+            - 0
+        note_id:
+          data_type: serial
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: note_id
+          order: 1
+          size:
+            - 0
+        text:
+          data_type: text
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: text
+          order: 3
+          size:
+            - 0
+        weight:
+          data_type: integer
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: weight
+          order: 5
+          size:
+            - 0
+      indices:
+        - fields:
+            - document_id
+          name: note_idx_document_id
+          options: []
+          type: NORMAL
+        - fields:
+            - label_id
+          name: note_idx_label_id
+          options: []
+          type: NORMAL
+      name: note
+      options: []
+      order: 13
+    place:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - place_id
+          match_type: ''
+          name: ''
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+      fields:
+        name:
+          data_type: text
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: name
+          order: 2
+          size:
+            - 0
+        parent_place_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: parent_place_id
+          order: 3
+          size:
+            - 0
+        place_id:
+          data_type: serial
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: place_id
+          order: 1
+          size:
+            - 0
+      indices: []
+      name: place
+      options: []
+      order: 6
+    place_meta:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - meta_id
+          match_type: ''
+          name: ''
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - place_id
+          match_type: ''
+          name: place_meta_fk_place_id
+          on_delete: CASCADE
+          on_update: CASCADE
+          options: []
+          reference_fields:
+            - place_id
+          reference_table: place
+          type: FOREIGN KEY
+      fields:
+        key:
+          data_type: text
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: key
+          order: 3
+          size:
+            - 0
+        meta_id:
+          data_type: serial
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: meta_id
+          order: 1
+          size:
+            - 0
+        place_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 0
+          name: place_id
+          order: 2
+          size:
+            - 0
+        value:
+          data_type: text
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: value
+          order: 4
+          size:
+            - 0
+      indices:
+        - fields:
+            - place_id
+          name: place_meta_idx_place_id
+          options: []
+          type: NORMAL
+      name: place_meta
+      options: []
+      order: 9
+    place_note:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - place_id
+            - note_id
+          match_type: ''
+          name: place_note_place_id_note_id
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: UNIQUE
+        - deferrable: 1
+          expression: ''
+          fields:
+            - note_id
+          match_type: ''
+          name: place_note_fk_note_id
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields:
+            - note_id
+          reference_table: note
+          type: FOREIGN KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - place_id
+          match_type: ''
+          name: place_note_fk_place_id
+          on_delete: CASCADE
+          on_update: CASCADE
+          options: []
+          reference_fields:
+            - place_id
+          reference_table: place
+          type: FOREIGN KEY
+      fields:
+        note_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 1
+          name: note_id
+          order: 2
+          size:
+            - 0
+        place_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 1
+          name: place_id
+          order: 1
+          size:
+            - 0
+      indices:
+        - fields:
+            - note_id
+          name: place_note_idx_note_id
+          options: []
+          type: NORMAL
+        - fields:
+            - place_id
+          name: place_note_idx_place_id
+          options: []
+          type: NORMAL
+      name: place_note
+      options: []
+      order: 17
+    project:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - project_id
+          match_type: ''
+          name: ''
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - group_id
+          match_type: ''
+          name: project_fk_group_id
+          on_delete: CASCADE
+          on_update: CASCADE
+          options: []
+          reference_fields:
+            - group_id
+          reference_table: project_group
+          type: FOREIGN KEY
+      fields:
+        group_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: group_id
+          order: 4
+          size:
+            - 0
+        name:
+          data_type: text
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 0
+          name: name
+          order: 3
+          size:
+            - 0
+        number:
+          data_type: integer
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: number
+          order: 2
+          size:
+            - 0
+        project_id:
+          data_type: serial
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: project_id
+          order: 1
+          size:
+            - 0
+      indices:
+        - fields:
+            - group_id
+          name: project_idx_group_id
+          options: []
+          type: NORMAL
+      name: project
+      options: []
+      order: 10
+    project_group:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - group_id
+          match_type: ''
+          name: ''
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+      fields:
+        group_id:
+          data_type: serial
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: group_id
+          order: 1
+          size:
+            - 0
+        name:
+          data_type: text
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 0
+          name: name
+          order: 2
+          size:
+            - 0
+      indices: []
+      name: project_group
+      options: []
+      order: 7
+    scene:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - scene_id
+          match_type: ''
+          name: ''
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - chapter_id
+          match_type: ''
+          name: scene_fk_chapter_id
+          on_delete: CASCADE
+          on_update: CASCADE
+          options: []
+          reference_fields:
+            - chapter_id
+          reference_table: chapter
+          type: FOREIGN KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - document_id
+          match_type: ''
+          name: scene_fk_document_id
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields:
+            - document_id
+          reference_table: document
+          type: FOREIGN KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - label_id
+          match_type: ''
+          name: scene_fk_label_id
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields:
+            - label_id
+          reference_table: label
+          type: FOREIGN KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - place_id
+          match_type: ''
+          name: scene_fk_place_id
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields:
+            - place_id
+          reference_table: place
+          type: FOREIGN KEY
+      fields:
+        chapter_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: chapter_id
+          order: 8
+          size:
+            - 0
+        document_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: document_id
+          order: 7
+          size:
+            - 0
+        label_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: label_id
+          order: 6
+          size:
+            - 0
+        name:
+          data_type: text
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: name
+          order: 2
+          size:
+            - 0
+        place_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: place_id
+          order: 9
+          size:
+            - 0
+        scene_id:
+          data_type: serial
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: scene_id
+          order: 1
+          size:
+            - 0
+        summ_tasks:
+          data_type: text
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: summ_tasks
+          order: 4
+          size:
+            - 0
+        summary:
+          data_type: text
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: summary
+          order: 3
+          size:
+            - 0
+        weight:
+          data_type: integer
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: weight
+          order: 5
+          size:
+            - 0
+      indices:
+        - fields:
+            - chapter_id
+          name: scene_idx_chapter_id
+          options: []
+          type: NORMAL
+        - fields:
+            - document_id
+          name: scene_idx_document_id
+          options: []
+          type: NORMAL
+        - fields:
+            - label_id
+          name: scene_idx_label_id
+          options: []
+          type: NORMAL
+        - fields:
+            - place_id
+          name: scene_idx_place_id
+          options: []
+          type: NORMAL
+      name: scene
+      options: []
+      order: 18
+    task:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - task_id
+          match_type: ''
+          name: ''
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - character_id
+          match_type: ''
+          name: task_fk_character_id
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields:
+            - character_id
+          reference_table: character
+          type: FOREIGN KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - label_id
+          match_type: ''
+          name: task_fk_label_id
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields:
+            - label_id
+          reference_table: label
+          type: FOREIGN KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - scene_id
+          match_type: ''
+          name: task_fk_scene_id
+          on_delete: CASCADE
+          on_update: CASCADE
+          options: []
+          reference_fields:
+            - scene_id
+          reference_table: scene
+          type: FOREIGN KEY
+      fields:
+        character_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: character_id
+          order: 7
+          size:
+            - 0
+        label_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: label_id
+          order: 5
+          size:
+            - 0
+        name:
+          data_type: text
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: name
+          order: 2
+          size:
+            - 0
+        scene_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: scene_id
+          order: 6
+          size:
+            - 0
+        summary:
+          data_type: text
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: summary
+          order: 3
+          size:
+            - 0
+        task_id:
+          data_type: serial
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: task_id
+          order: 1
+          size:
+            - 0
+        weight:
+          data_type: integer
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: weight
+          order: 4
+          size:
+            - 0
+      indices:
+        - fields:
+            - character_id
+          name: task_idx_character_id
+          options: []
+          type: NORMAL
+        - fields:
+            - label_id
+          name: task_idx_label_id
+          options: []
+          type: NORMAL
+        - fields:
+            - scene_id
+          name: task_idx_scene_id
+          options: []
+          type: NORMAL
+      name: task
+      options: []
+      order: 20
+  triggers: {}
+  views: {}
+translator:
+  add_drop_table: 0
+  filename: ~
+  no_comments: 0
+  parser_args:
+    sources:
+      - AccessUser
+      - Chapter
+      - Character
+      - CharacterGoal
+      - CharacterMeta
+      - CharacterNote
+      - CharacterProject
+      - CharacterScene
+      - Document
+      - Goal
+      - GoalNote
+      - Label
+      - Note
+      - Place
+      - PlaceMeta
+      - PlaceNote
+      - Project
+      - ProjectGroup
+      - Scene
+      - Task
+  parser_type: SQL::Translator::Parser::DBIx::Class
+  producer_args: {}
+  producer_type: SQL::Translator::Producer::YAML
+  show_warnings: 0
+  trace: 0
+  version: 0.11021

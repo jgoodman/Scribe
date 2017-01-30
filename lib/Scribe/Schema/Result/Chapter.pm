@@ -15,7 +15,12 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key('chapter_id');
 __PACKAGE__->belongs_to('project' => 'Scribe::Schema::Result::Project', 'project_id', { join_type => 'left' });
-__PACKAGE__->has_many('', 'Scribe::Schema::Result::Chapter', 'chapter_id');
+
+__PACKAGE__->has_many(
+    'scenes' => 'Scribe::Schema::Result::Scene', 'chapter_id', {
+        order_by => { -asc => [qw/weight name scene_id/]}
+    }
+);
 
 1;
 

@@ -21,6 +21,25 @@ sub url {
     return $self->SUPER::url.'/cgi/scene_board';
 }
 
+sub path_info_map_base {
+   my $self = shift;
+   return [
+       [qr{^/(\d+)/(\w+)}, 'project_id', $self->step_key],
+       [qr{^/(\d+)},       'project_id'],
+       #[qr{^/([^/]+)/(\w+)}, 'project', $self->step_key], # TODO do I ever want to do this?
+       [qr{^/(\w+)},       $self->step_key],
+   ];
+}
+
+# TODO put this in Scribe::App?
+sub project {
+    my $self = shift;
+    my $project_id = $self->form->{'project_id'} || $self->project_id;
+    return $project_id
+         ? $self->schema->resultset('Project')->single({ project_id => $project_id })
+         : undef;
+}
+
 
 ###-----------------------------------------------------------------###
 
@@ -31,9 +50,23 @@ sub main_hash_swap {
     my $hash = $self->SUPER::main_hash_swap;
     $hash->{'section'} = 'SceneBoard';
 
-    my $scenes = $self->schema->resultset('Scene')->search(
-        undef, { order_by => 'weight ASC, name ASC, scene_id ASC' }
+    my $project;
+    unless($project = $self->project) {
+        $self->cgix->location_bounce($self->url_cgi_project);
+        return 0;
+    }
+
+    $hash->{'project_id'} = $project->project_id;
+
+    # Get chapter
+    # TODO At some point, implement multiple chapters
+    $hash->{'chapter_id'} = $project->chapters->single->chapter_id;
+
+    # Fetch scenes
+    my $scenes = $project->chapters->search_related(
+        'scenes', undef, { order_by => 'weight ASC, name ASC, scene_id ASC' }
     );
+
     my @rows;
     while (my $scene = $scenes->next) {
         my $summary = $scene->summary;
@@ -46,7 +79,7 @@ sub main_hash_swap {
             } $scene->tasks;
         }
 
-        my $hash = {
+        my $row = {
             scene_id      => $scene->scene_id,
             name          => $scene->name,
             summary       => $summary,
@@ -56,10 +89,10 @@ sub main_hash_swap {
             place_id      => $scene->place_id,
         };
         if(my $doc = $scene->document) {
-            $hash->{'document_id'}   = $doc->document_id;
-            $hash->{'document_name'} = $doc->name,
+            $row->{'document_id'}   = $doc->document_id;
+            $row->{'document_name'} = $doc->name,
         }
-        push @rows, $hash;
+        push @rows, $row;
     }
     $hash->{'scenes'} = \@rows;
     $hash->{'success'} = $self->get_success;
@@ -139,7 +172,18 @@ sub place_add_hash_validation {
     return { }
 }
 
-sub place_add_finalize { shift->add_finalize_common('Place') }
+sub place_add_finalize {
+    my $self = shift;
+
+    my $place = $self->add_record('Place');
+    $self->add_record('PlaceProject', {
+        place_id   => $place->place_id,
+        project_id => $self->form->{'project_id'},
+    } );
+
+    $self->cgix->location_bounce($self->url_cgi_board);
+    return 0;
+}
 
 
 ###-----------------------------------------------------------------###
@@ -154,7 +198,19 @@ sub character_add_hash_validation {
     return { }
 }
 
-sub character_add_finalize { shift->add_finalize_common('Character') }
+sub character_add_finalize {
+    my $self = shift;
+
+    my $character = $self->add_record('Character');
+    $self->add_record('CharacterProject', {
+        character_id => $character->character_id,
+        project_id   => $self->form->{'project_id'},
+    } );
+
+    $self->cgix->location_bounce($self->url_cgi_board);
+    return 0;
+
+}
 
 
 ###-----------------------------------------------------------------###

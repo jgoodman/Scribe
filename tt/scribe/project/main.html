@@ -1,0 +1,21 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    [%- INCLUDE scribe/head.html %]
+</head>
+<body>
+<div id="wrapper">
+    [%- INCLUDE scribe/header.html %]
+    <div id="content">
+        <div style="padding: 0em .5em 0em .5em;">
+    	    <a href="[%- url_cgi %]/project/add">[ add project ]</a>
+    	</div>
+        <div style="padding: 0em .5em 0em .5em;">
+            <ul>
+            [%- FOREACH project IN projects %]
+                <li><a href="[%- url_cgi %]/scene_board/[% project.project_id %]">[% project.name %]</a></li>
+            [%- END %]
+            </ul>
+    	</div>
+    </div>
+[%- INCLUDE scribe/footer.html %]

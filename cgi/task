@@ -20,7 +20,7 @@ sub url { shift->SUPER::url.'/cgi/task' }
 
 sub main_hash_swap {
     my $self = shift;
-    $self->cgix->location_bounce($self->board_url);
+    $self->cgix->location_bounce($self->url_cgi_board);
     return 0;
 }
 
@@ -74,7 +74,7 @@ sub _bounce_url {
     my $self = shift;
     my $task_obj = shift;
 
-    my $bounce_url = $self->board_url;
+    my $bounce_url = $self->url_cgi_board;
     if(my $scene_id = $task_obj->scene_id) {
         $bounce_url = $self->url_cgi."/scene/edit?scene_id=$scene_id";
     }

@@ -20,7 +20,7 @@ sub url { shift->SUPER::url.'/cgi/scene' }
 
 sub main_hash_swap {
     my $self = shift;
-    $self->cgix->location_bounce($self->board_url);
+    $self->cgix->location_bounce($self->url_cgi_board);
     return 0;
 }
 
@@ -42,14 +42,37 @@ sub add_hash_swap {
     my $sibling_scenes = $self->flat_search('Scene', undef, { order_by => { -desc => [qw/weight/] } });
     $default_weight = $sibling_scenes->[0]->{'weight'} + 1 if $sibling_scenes && $sibling_scenes->[0];
 
+
+    my $places;
+    my $characters;
+    my $chapter_id = $self->form->{'chapter_id'};
+    if(!$chapter_id && $crud eq 'edit') {
+        $chapter_id = $self->schema->resultset('Scene')->single({ scene_id => $self->form->{'scene_id'} })->chapter_id;
+    }
+    if($chapter_id) {
+        my $chapter    = $self->schema->resultset('Chapter')->single({ chapter_id => $chapter_id });
+        my $project_id = $chapter->project_id;
+        $characters = [
+            map {
+                { character_id => $_->character_id, name => $_->character->name }
+            } $self->schema->resultset('CharacterProject')->search({ project_id => $project_id })
+        ];
+        $places = [
+            map {
+                { place_id => $_->place_id, name => $_->place->name }
+            } $self->schema->resultset('PlaceProject')->search({ project_id => $project_id })
+        ];
+    }
+
     my $url_theme = $self->url_theme;
     return {
         section        => ucfirst($crud).' Scene',
         css_crud       => "$url_theme/$crud.css",
-        characters     => $self->flat_search('Character', undef, { order_by => { -asc => [qw/name/] } }),
-        places         => $self->flat_search('Place',     undef, { order_by => { -asc => [qw/name/] } }),
-        labels         => $self->flat_search('Label',     undef, { order_by => { -asc => [qw/name/] } }),
+        characters     => $characters,
+        places         => $places,
+        labels         => $self->flat_search('Label', undef, { order_by => { -asc => [qw/name/] } }),
         default_weight => $default_weight,
+        chapter_id     => $self->form->{'chapter_id'},
     }
 }
 
@@ -66,7 +89,9 @@ sub add_finalize {
 
     $form{'place_id'} = undef if defined $form{'place_id'} && $form{'place_id'} eq '';
 
-    my $scene_id = $self->add_record('Scene', \%form)->scene_id;
+    my $scene = $self->add_record('Scene', \%form);
+    $self->project_id($scene->chapter->project->project_id);
+    my $scene_id = $scene->scene_id;
 
     my $characters = ! defined $form{'characters[]'}      ? [ ]
                    : ref $form{'characters[]'} ne 'ARRAY' ? [ $form{'characters[]'} ]
@@ -87,7 +112,7 @@ sub add_finalize {
         $self->set_success('Character #'.$link_obj->character_id.' linked to Scene #'.$link_obj->scene_id);
     }
 
-    $self->cgix->location_bounce($self->board_url);
+    $self->cgix->location_bounce($self->url_cgi_board);
     return 0;
 }
 
@@ -109,6 +134,7 @@ sub edit_hash_common {
     my $pkg = 'Scene';
     my $schema = $self->schema;
     my $scene_obj = $schema->resultset($pkg)->find({ scene_id => $scene_id }) or die 'Scene not found';
+    $self->project_id($scene_obj->chapter->project->project_id);
 
     my $scene;
     foreach my $col ($schema->source($pkg)->columns) {
@@ -160,6 +186,8 @@ sub edit_finalize {
     my $pkg    = 'Scene';
     my $schema = $self->schema;
     my $scene  = $schema->resultset($pkg)->find({ scene_id => $form{'scene_id'} }) or die 'Scene not found';
+    $self->project_id($scene->chapter->project->project_id);
+    $form{'chapter_id'} ||= $scene->chapter_id;
 
     $form{'document_id'} = undef unless exists $form{'document_id'};
     my $url = delete $form{'document_url_address'};
@@ -202,7 +230,7 @@ sub edit_finalize {
         $self->set_success('Character #'.$link_obj->character_id.' linked to Scene #'.$link_obj->scene_id);
     }
 
-    $self->cgix->location_bounce($self->board_url);
+    $self->cgix->location_bounce($self->url_cgi_board);
     return 0;
 }
 
@@ -223,9 +251,13 @@ sub delete_hash_swap {
 
     if(my $scene_id = $form{'scene_id'}) {
         $self->schema->resultset('CharacterScene')->search({ scene_id => $scene_id })->delete;
-        $self->schema->resultset('Scene')->find({ scene_id => $scene_id })->delete;
+
+        my $scene_obj = $self->schema->resultset('Scene')->find({ scene_id => $scene_id });
+        $self->project_id($scene_obj->chapter->project->project_id);
+        $scene_obj->delete;
+
         $self->set_success("Scene #$scene_id Deleted");
-        $self->cgix->location_bounce($self->board_url);
+        $self->cgix->location_bounce($self->url_cgi_board);
         return 0;
     }
 
